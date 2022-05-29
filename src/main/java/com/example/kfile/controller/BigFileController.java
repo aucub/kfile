@@ -6,8 +6,6 @@ import io.minio.PutObjectArgs;
 import io.minio.StatObjectArgs;
 import io.minio.errors.MinioException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.commons.fileupload.RequestContext;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,7 +66,11 @@ public class BigFileController {
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @ResponseBody
     public void filewebUpload(MultipartFileParam param, HttpServletRequest request) {
-        boolean isMultipart = ServletFileUpload.isMultipartContent((RequestContext) request);
+        boolean isMultipart = true;
+        String contentType = request.getContentType();
+        if (contentType == null || !contentType.toLowerCase().startsWith("multipart/")) {
+            isMultipart = false;
+        }
         // 文件名
         String fileName = param.getName();
         // 文件每次分片的下标
