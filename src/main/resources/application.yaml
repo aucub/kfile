@@ -1,0 +1,13 @@
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 2MB
+      max-request-size: 2MB
+      location: ./tmp
+  thymeleaf:
+    encoding: UTF-8
+    mode: HTML
+    cache: false
+server:
+  port: 8080
