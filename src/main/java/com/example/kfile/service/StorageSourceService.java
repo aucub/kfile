@@ -7,10 +7,6 @@ import com.example.kfile.repository.StorageSourceRepository;
 import com.example.kfile.util.CodeMsg;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +18,6 @@ import java.util.List;
  */
 @Slf4j
 @Service
-@CacheConfig(cacheNames = "storageSource")
 public class StorageSourceService {
 
     private StorageSourceRepository storageSourceRepository;
@@ -58,7 +53,6 @@ public class StorageSourceService {
      * @param platform 存储源
      * @return 存储源设置
      */
-    @Cacheable(key = "#platform", unless = "#result == null")
     public StorageSource findById(String platform) throws FileNotFoundException {
         if (storageSourceRepository.findById(platform).isEmpty())
             throw new FileNotFoundException();
@@ -72,11 +66,6 @@ public class StorageSourceService {
      * @param platform 存储源
      */
     @Transactional(rollbackFor = Exception.class)
-    @Caching(evict = {
-            @CacheEvict(key = "#platform"),
-            @CacheEvict(key = "'dto-' + #platform"),
-            @CacheEvict(key = "#result.platform", condition = "#result != null")
-    })
     public StorageSource deleteById(String platform) {
         if (storageSourceRepository.findById(platform).isEmpty()) {
             String msg = StrUtil.format("删除存储源时检测到 id 为 {} 的存储源不存在", platform);
@@ -86,10 +75,6 @@ public class StorageSourceService {
     }
 
 
-    @Caching(evict = {
-            @CacheEvict(key = "#entity.platform"),
-            @CacheEvict(key = "'dto-' + #entity.platform")
-    })
     public StorageSource save(StorageSource entity) {
         return storageSourceRepository.save(entity);
     }
