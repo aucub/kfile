@@ -15,7 +15,7 @@ public class MoveFileRequest {
     private String source;
 
     @ApiModelProperty(value = "文件ID")
-    private String fileId;
+    private String fileItemId;
 
     @ApiModelProperty(value = "目标父路径")
     private String target;

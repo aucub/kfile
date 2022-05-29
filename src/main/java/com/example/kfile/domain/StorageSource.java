@@ -5,6 +5,9 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * TODO 根据需求修改，暂不使用
+ */
 @Data
 @AllArgsConstructor
 @Document("StorageSource")

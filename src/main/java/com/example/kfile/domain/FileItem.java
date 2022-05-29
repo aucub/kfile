@@ -19,9 +19,9 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document("FileInfo")
+@Document("FileItem")
 @ApiModel(value = "文件信息")
-public class FileInfo implements Serializable {
+public class FileItem implements Serializable {
 
     @Id
     private String id;
@@ -29,28 +29,22 @@ public class FileInfo implements Serializable {
     @Version
     private Long version;
 
-    @ApiModelProperty(value = "存储源", example = "minio-1")
-    private String storage;
+    private String fileInfoId;
 
-    private String storageObject;
-    private String url;
-    private String thUrl;
-
-    private String thumbObject;
-
-    @ApiModelProperty(value = "文件名", example = "a.mp4")
+    @ApiModelProperty(value = "文件名", example = "a")
     private String name;
+
+    @ApiModelProperty(value = "扩展名", example = "mp4")
+    private String ext;
 
     @ApiModelProperty(value = "类型", example = "file")
     private FileTypeEnum type;
 
-    private String contentType;//MIME类型
-
-    @ApiModelProperty(value = "大小", example = "1024")
-    private Long size;
+    @ApiModelProperty(value = "MIME类型", example = "video/mp4")
+    private String contentType;
 
     @ApiModelProperty(value = "所在路径ID")
-    private String path;
+    private String directory;
 
     @ApiModelProperty(value = "创建时间", example = "2020-01-01 15:22")
     private Date createdDate;
@@ -65,6 +59,6 @@ public class FileInfo implements Serializable {
     private String share;
 
     @ApiModelProperty(value = "描述")
-    private String describe;
+    private String description;
 
 }

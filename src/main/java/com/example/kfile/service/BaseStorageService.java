@@ -4,8 +4,10 @@ import cn.xuyanwu.spring.file.storage.FileInfo;
 import cn.xuyanwu.spring.file.storage.FileStorageService;
 import cn.xuyanwu.spring.file.storage.platform.FileStorage;
 import cn.xuyanwu.spring.file.storage.platform.MinIOFileStorage;
+import com.example.kfile.domain.FileItem;
 import com.example.kfile.domain.StorageSource;
-import com.example.kfile.repository.FileInfoRepository;
+import com.example.kfile.repository.FileDetailRepository;
+import com.example.kfile.repository.FileItemRepository;
 import com.example.kfile.repository.StorageSourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -24,11 +26,18 @@ public class BaseStorageService {
     FileStorageService fileStorageService;
     StorageSourceRepository storageSourceRepository;
 
-    FileInfoRepository fileInfoRepository;
+    FileItemRepository fileItemRepository;
+
+    FileDetailRepository fileDetailRepository;
 
     @Autowired
-    public void setFileInfoRepository(FileInfoRepository fileInfoRepository) {
-        this.fileInfoRepository = fileInfoRepository;
+    public void setFileItemRepository(FileItemRepository fileItemRepository) {
+        this.fileItemRepository = fileItemRepository;
+    }
+
+    @Autowired
+    public void setFileDetailRepository(FileDetailRepository fileDetailRepository) {
+        this.fileDetailRepository = fileDetailRepository;
     }
 
     @Autowired
@@ -60,12 +69,12 @@ public class BaseStorageService {
         return true;
     }
 
-    public ResponseEntity<InputStreamResource> downloadFile(String fileId, String filename) {
+    public ResponseEntity<InputStreamResource> downloadFile(String fileItemId, String filename) {
         try {
-            com.example.kfile.domain.FileInfo fileInfo = fileInfoRepository.findById(fileId).get();
-            FileInfo fileInfo1 = fileStorageService.getFileInfoByUrl(fileInfo.getUrl());
+            FileItem fileItem = fileItemRepository.findById(fileItemId).get();
+            FileInfo fileInfo = fileDetailRepository.findById(fileItem.getFileInfoId()).get();
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            fileStorageService.download(fileInfo1).outputStream(byteArrayOutputStream);
+            fileStorageService.download(fileInfo).outputStream(byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray);
             InputStreamResource resource = new InputStreamResource(byteArrayInputStream);
@@ -82,8 +91,8 @@ public class BaseStorageService {
         return null;
     }
 
-    public Boolean delete(String fileId) {
-        fileStorageService.delete(fileInfoRepository.findById(fileId).get().getUrl());
+    public Boolean delete(String fileItemId) {
+        fileStorageService.delete(fileDetailRepository.findById(fileItemRepository.findById(fileItemId).get().getFileInfoId()).get());
         return true;
     }
 
