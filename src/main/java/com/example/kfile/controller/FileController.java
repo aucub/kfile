@@ -20,7 +20,7 @@ public class FileController {
 
     @GetMapping("/")
     public String uploadPage() {
-        return "index";
+        return "uploader";
     }
 
     @PostMapping("/upload")
