@@ -15,8 +15,18 @@ public class FileUtil {
         return fileEntry;
     }
 
-    //TODO
-    public static Boolean check(List<FileItem> fileItems, FileItem fileItem) {
-        return fileItems.contains(fileItem);
+
+    //检查文件是否冲突
+    public static boolean checkConflict(List<FileItem> fileItems, FileItem fileItem) {
+        //检查文件名是否与任何现有文件项冲突
+        for (FileItem item : fileItems) {
+            if (fileItem.getId().equals(item.getId())) {
+                continue;
+            }
+            if (fileItem.getName().equals(item.getName())) {
+                return false;
+            }
+        }
+        return true;
     }
 }

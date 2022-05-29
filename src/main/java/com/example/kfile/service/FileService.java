@@ -1,5 +1,8 @@
 package com.example.kfile.service;
 
+import com.example.kfile.domain.FileDetail;
+import com.example.kfile.domain.FileItem;
+import com.example.kfile.domain.request.UploadFileRequest;
 import com.example.kfile.domain.result.FileEntry;
 
 import java.io.FileNotFoundException;
@@ -36,6 +39,10 @@ public interface FileService {
      * @return 新文件夹的文件项
      */
     FileEntry newFolder(String directory, String name);
+
+    FileItem newFile(UploadFileRequest uploadFileRequest, FileDetail fileDetail);
+
+    FileDetail checkUpload(UploadFileRequest uploadFileRequest);
 
     /**
      * 删除文件

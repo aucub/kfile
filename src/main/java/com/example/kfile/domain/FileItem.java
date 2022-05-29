@@ -27,11 +27,11 @@ public class FileItem implements Serializable {
     private String id;
 
     @Version
-    private Long version;
+    private short version;
 
     private String fileInfoId;
 
-    @ApiModelProperty(value = "文件名", example = "a")
+    @ApiModelProperty(value = "文件名", example = "a.mp4")
     private String name;
 
     @ApiModelProperty(value = "扩展名", example = "mp4")
