@@ -20,10 +20,7 @@ public class MDCFilter implements Filter {
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
         MDC.put(MdcConstant.TRACE_ID, IdUtil.fastUUID());
-
-        //TODO  根据实际情况修改
-
-        // MDC.put(MdcConstant.IP, ServletUtil.getClientIP(httpServletRequest));
+        MDC.put(MdcConstant.IP, request.getRemoteAddr());
         MDC.put(MdcConstant.USER, StpUtil.isLogin() ? StpUtil.getLoginIdAsString() : "anonymous");
 
         try {

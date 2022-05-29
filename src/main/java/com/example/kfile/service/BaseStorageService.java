@@ -21,6 +21,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * TODO  根据需求更改
+ */
 @Service
 public class BaseStorageService {
     FileStorageService fileStorageService;

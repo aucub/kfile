@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * TODO 代理传输数据(上传/下载) Service
+ * TODO  代理传输数据(上传/下载) Service
  */
 public abstract class AbstractProxyTransferService {
 
