@@ -30,7 +30,6 @@ public class TokenServiceImpl implements ITokenService {
      * 根据Claims生成JWT的token
      */
     public String generateToken(Map<String, Object> claims) {
-        System.out.println("生成token的用户名" + claims.get("sub"));
         return Jwts.builder()
                 .claims(claims)
                 .expiration(generateExpirationDate())

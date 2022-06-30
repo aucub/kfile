@@ -42,6 +42,7 @@ public class UserController {
 
     private TokenServiceImpl tokenService;
 
+
     @Value("${jwt.tokenHeader}")
     private String tokenHeader;
 
@@ -87,8 +88,6 @@ public class UserController {
             }
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            System.out.println("登录信息：" + userDetails);
-            System.out.println("登录用户：" + userDetails.getUsername());
             token = tokenService.generateToken(userDetails);
         } catch (AuthenticationException e) {
             log.error("登录异常，detail" + e.getMessage());
