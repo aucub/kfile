@@ -6,6 +6,7 @@ import com.example.kfile.entity.Result;
 import com.example.kfile.entity.enums.FileTypeEnum;
 import com.example.kfile.entity.request.*;
 import com.example.kfile.entity.result.FileEntry;
+import com.example.kfile.security.FilePermissionCheck;
 import com.example.kfile.service.IFileItemService;
 import com.example.kfile.service.IFileService;
 import com.example.kfile.service.IUserService;
@@ -54,6 +55,9 @@ public class FileController {
 
     //创建文件夹
     @PostMapping("/mkdir")
+    @FilePermissionCheck({
+            @FilePermissionCheck.FieldPermission(field = "directory", permission = "upload")
+    })
     public Result mkdir(@Valid @RequestBody NewFolderRequest newFolderRequest) {
         return Result.success("创建成功", fileItemService.newFolder(newFolderRequest.getDirectory(), newFolderRequest.getName()));
     }

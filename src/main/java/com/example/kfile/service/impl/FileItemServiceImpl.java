@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.kfile.entity.FileDetail;
 import com.example.kfile.entity.FileItem;
+import com.example.kfile.entity.Share;
 import com.example.kfile.entity.enums.FileTypeEnum;
 import com.example.kfile.entity.enums.OrderByTypeEnum;
 import com.example.kfile.entity.enums.OrderDirectionTypeEnum;
@@ -14,6 +15,7 @@ import com.example.kfile.entity.result.FileEntry;
 import com.example.kfile.mapper.FileItemMapper;
 import com.example.kfile.service.FileDetailService;
 import com.example.kfile.service.IFileItemService;
+import com.example.kfile.service.IShareService;
 import com.example.kfile.service.IUserService;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
@@ -41,6 +43,9 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
     FileItemMapper fileItemMapper;
     FileDetailService fileDetailService;
     IUserService userService;
+
+    @Autowired
+    IShareService shareService;
 
     @Autowired
     public void setFileItemMapper(FileItemMapper fileItemMapper) {
@@ -150,6 +155,21 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
     }
 
     @Override
+    public String getPermission(String id) {
+        FileItem fileItem = getById(id);
+        if (fileItem.getCreatedBy().equals(userService.getUserInfo().getId())) {
+            return "7";
+        } else if (!fileItem.getShare().isEmpty()) {
+            Share share = shareService.getById(fileItem.getShare());
+            if (share.getAcl().equals("users")) return "7";
+            if (share.getAcl().equals("acl")) {
+                share.getAclList();
+            }
+        }
+        return "0";
+    }
+
+    @Override
     @Transactional
     // 删除文件
     public Boolean deleteFile(String fileItemId) {
@@ -165,7 +185,7 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
     @Transactional
     // 复制文件
     public Boolean copyFile(String fileItemId, String targetDirectory) {
-        // 根据文件ID构建可变图
+        // 根据文件ID建可变图
         MutableGraph<String> mutableGraph = buildMutableGraphByFileId(fileItemId);
         // 复制节点及其子节点到目标目录
         return !copyNodeAndDescendants(mutableGraph, fileItemId, targetDirectory).isEmpty();

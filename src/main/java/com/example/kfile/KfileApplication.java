@@ -23,7 +23,6 @@ public class KfileApplication {
 
     @Bean
     public TusFileUploadService tusFileUploadService() {
-        return new TusFileUploadService().withStoragePath(tusUploadDirectory)
-                .withUploadURI("/file/upload");
+        return new TusFileUploadService().withStoragePath(tusUploadDirectory).withUploadUri("/file/upload");
     }
 }
