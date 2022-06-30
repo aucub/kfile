@@ -1,7 +1,6 @@
 package com.example.kfile.service.impl;
 
 import com.example.kfile.service.IRedisService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,14 +10,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class RedisService implements IRedisService {
+public class RedisServiceImpl implements IRedisService {
 
-    private RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 
-    @Autowired
-    public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
 
     @Override
     public void set(String key, Object value, long time) {

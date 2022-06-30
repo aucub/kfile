@@ -22,7 +22,7 @@ public class Result extends HashMap<String, Object> {
     public static final String DATA_TAG = "data";
 
     /**
-     * 初始化一个新创建的 AjaxResult 对象
+     * 初始化一个新创建的 Result 对象
      *
      * @param code 状态码
      * @param msg  返回内容
@@ -33,7 +33,7 @@ public class Result extends HashMap<String, Object> {
     }
 
     /**
-     * 初始化一个新创建的 AjaxResult 对象
+     * 初始化一个新创建的 Result 对象
      *
      * @param code 状态码
      * @param msg  返回内容
@@ -113,7 +113,7 @@ public class Result extends HashMap<String, Object> {
      * @return 错误消息
      */
     public static Result error(String msg, Object data) {
-        return new Result(500, msg, data);
+        return new Result(400, msg, data);
     }
 
     /**
@@ -125,6 +125,37 @@ public class Result extends HashMap<String, Object> {
      */
     public static Result error(int code, String msg) {
         return new Result(code, msg, null);
+    }
+
+
+    /**
+     * 参数验证失败返回结果
+     */
+    public static Result validateError() {
+        return new Result(400, "参数校验失败", null);
+    }
+
+    /**
+     * 参数验证失败返回结果
+     *
+     * @param msg 提示信息
+     */
+    public static Result validateError(String msg) {
+        return new Result(400, msg, null);
+    }
+
+    /**
+     * 未登录返回结果
+     */
+    public static Result unauthorized(Object data) {
+        return new Result(401, "暂未登录或token以过期", data);
+    }
+
+    /**
+     * 未授权返回结果
+     */
+    public static Result forbidden(Object data) {
+        return new Result(403, "没有相关权限", data);
     }
 
     /**
