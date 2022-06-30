@@ -1,4 +1,4 @@
-package com.example.kfile.domain;
+package com.example.kfile.domain.result;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,9 +13,9 @@ import java.util.List;
 @Data
 @ApiModel(value = "文件列表信息结果类")
 @AllArgsConstructor
-public class FileInfoList {
+public class FileEntryList {
 
     @ApiModelProperty(value = "文件列表")
-    private List<FileInfo> files;
+    private List<FileEntry> files;
 
 }

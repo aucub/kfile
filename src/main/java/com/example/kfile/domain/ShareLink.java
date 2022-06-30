@@ -30,7 +30,7 @@ public class ShareLink implements Serializable {
 
 
     //文件ID
-    private String fileId;
+    private String fileItemId;
 
     //访问范围, example = "public","aclist","users"
     private String acl;

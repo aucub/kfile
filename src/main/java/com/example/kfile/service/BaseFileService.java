@@ -1,7 +1,6 @@
 package com.example.kfile.service;
 
-
-import com.example.kfile.domain.FileInfo;
+import com.example.kfile.domain.FileItem;
 
 import java.util.List;
 
@@ -20,7 +19,7 @@ public interface BaseFileService {
      *
      * @throws Exception  获取文件列表中出现的异常
      */
-    List<FileInfo> fileList(String folderPath) throws Exception;
+    List<FileItem> fileList(String folderPath) throws Exception;
 
     /**
      * 获取单个文件信息
@@ -28,7 +27,7 @@ public interface BaseFileService {
      * @param pathAndName 文件路径及文件名称
      * @return 单个文件的内容.
      */
-    FileInfo getFileItem(String pathAndName);
+    FileItem getFileItem(String pathAndName);
 
     /**
      * 创建新文件夹

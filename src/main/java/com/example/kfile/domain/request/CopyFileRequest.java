@@ -16,7 +16,7 @@ public class CopyFileRequest {
     private String source;
 
     @ApiModelProperty(value = "文件ID")
-    private String fileId;
+    private String fileItemId;
 
     @ApiModelProperty(value = "目标路径")
     private String target;

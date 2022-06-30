@@ -1,7 +1,7 @@
 package com.example.kfile.service;
 
 import com.example.kfile.domain.ShareLink;
-import com.example.kfile.repository.FileInfoRepository;
+import com.example.kfile.repository.FileDetailRepository;
 import com.example.kfile.repository.SandBoxRepository;
 import com.example.kfile.repository.ShareLinkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FileService {
-    FileInfoRepository fileInfoRepository;
+    FileDetailRepository fileInfoRepository;
     SandBoxRepository sandBoxRepository;
     ShareLinkRepository shareLinkRepository;
 
     @Autowired
-    public void setFileInfoRepository(FileInfoRepository fileInfoRepository) {
+    public void setFileInfoRepository(FileDetailRepository fileInfoRepository) {
         this.fileInfoRepository = fileInfoRepository;
     }
 
@@ -36,15 +36,15 @@ public class FileService {
         }
     }
 
-    public Boolean checkFileAndShare(String fileId, String url) {
-        String path = shareLinkRepository.findById(fileId).get().getFileId();
-        if (fileId.equals(path)) {
+    public Boolean checkFileAndShare(String fileItemId, String url) {
+        String path = shareLinkRepository.findById(fileItemId).get().getFileItemId();
+        if (fileItemId.equals(path)) {
             return true;
         } else {
             do {
-                fileId = fileInfoRepository.findById(fileId).get().getPath();
-            } while ((!fileId.equals(path)) || (!fileId.equals("")) || (fileId != null));
-            if (fileId.equals(path)) {
+                fileItemId = fileInfoRepository.findById(fileItemId).get().getPath();
+            } while ((!fileItemId.equals(path)) || (!fileItemId.equals("")) || (fileItemId != null));
+            if (fileItemId.equals(path)) {
                 return true;
             } else return false;
         }
