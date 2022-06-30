@@ -13,12 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class MinIOServiceImpl implements StorageService {
 
-
-    @Override
-    public String getDownloadUrl(String path) {
-        return null;
-    }
-
     @Override
     public String getDownloadUrl(String path, long expires) {
         return null;

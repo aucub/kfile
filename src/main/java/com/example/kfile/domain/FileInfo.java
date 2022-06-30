@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
@@ -25,14 +26,25 @@ public class FileInfo implements Serializable {
     @Id
     private String id;
 
+    @Version
+    private Long version;
+
     @ApiModelProperty(value = "存储源", example = "minio-1")
     private String storage;
+
+    private String storageObject;
+    private String url;
+    private String thUrl;
+
+    private String thumbObject;
 
     @ApiModelProperty(value = "文件名", example = "a.mp4")
     private String name;
 
     @ApiModelProperty(value = "类型", example = "file")
     private FileTypeEnum type;
+
+    private String contentType;//MIME类型
 
     @ApiModelProperty(value = "大小", example = "1024")
     private Long size;

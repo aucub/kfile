@@ -37,7 +37,6 @@ public class FileComparator implements Comparator<FileInfo> {
         if (sortBy == null) {
             sortBy = "name";
         }
-
         if (order == null) {
             order = "asc";
         }
