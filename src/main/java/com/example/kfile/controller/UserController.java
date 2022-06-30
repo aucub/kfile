@@ -56,6 +56,9 @@ public class UserController {
     @Value("${jwt.expireTime}")
     private int expireTime;
 
+    @Value("${jwt.refreshExpireTime}")
+    private int refreshExpireTime;
+
     @Autowired
     public void setUserService(IUserService userService) {
         this.userService = userService;
@@ -95,7 +98,7 @@ public class UserController {
     @PostMapping("/login")
     public Result login(@Validated @RequestBody UserLoginRequest userLoginRequest) {
         if (!loginUserService.checkMail(userLoginRequest.getUsername())) return Result.error("邮箱不存在");
-        String rawtoken;
+        String rawtoken,rawRefreshToken;
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(userLoginRequest.getUsername());
             if (!passwordEncoder.matches(userLoginRequest.getPassword(), userDetails.getPassword())) {
@@ -106,29 +109,31 @@ public class UserController {
             }
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            rawtoken = tokenService.generateToken(userDetails);
+            rawtoken = tokenService.generateToken(userDetails,expireTime);
+            rawRefreshToken = tokenService.generateToken(userDetails,refreshExpireTime);
         } catch (AuthenticationException e) {
             return Result.validateError("用户名或密码不正确");
         }
         loginUserService.updateLoginDateByUsername(userLoginRequest.getUsername());
         User user = userService.getUserInfo();
         Token token = new Token(rawtoken, expireTime);
+        Token refreshToken = new Token(rawtoken, refreshExpireTime);
         Map<String, Object> tokenMap = new HashMap<>();
         tokenMap.put("user", user);
         tokenMap.put("token", token);
+        tokenMap.put("refreshToken", token);
         return Result.success(tokenMap);
     }
 
     @PostMapping("/refreshToken")
     public Result refreshToken(@RequestBody HttpServletRequest request) {
-        String token = request.getHeader(tokenHeader).substring(this.tokenHead.length());
-        String refreshToken = tokenService.refresh(token);
-        if (refreshToken == null) {
-            return Result.error("token已经过期！");
+        String refreshToken = request.getHeader(tokenHeader).substring(this.tokenHead.length());
+        String refreshedToken = tokenService.refresh(refreshToken,expireTime);
+        if (refreshedToken == null) {
+            return Result.error("refreshToken已经过期！");
         }
-        ;
         Map<String, Object> tokenMap = new HashMap<>();
-        tokenMap.put("token", new Token(refreshToken, expireTime));
+        tokenMap.put("token", new Token(refreshedToken, expireTime));
         return Result.success(tokenMap);
     }
 

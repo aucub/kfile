@@ -10,7 +10,7 @@ public interface ITokenService {
     /**
      * 根据Claims生成JWT的token
      */
-    String generateToken(Map<String, Object> claims);
+    String generateToken(Map<String, Object> claims,int expireTime);
 
     /**
      * 从令牌中获取数据声明
@@ -23,7 +23,7 @@ public interface ITokenService {
     /**
      * 生成token的过期时间
      */
-    Date generateExpirationDate();
+    Date generateExpirationDate(int expireTime);
 
     /**
      * 从令牌中获取用户名
@@ -72,7 +72,7 @@ public interface ITokenService {
      * @param userDetails 用户信息
      * @return 生成的token
      */
-    String generateToken(UserDetails userDetails);
+    String generateToken(UserDetails userDetails,int expireTime);
 
     /**
      * 刷新token
@@ -80,7 +80,7 @@ public interface ITokenService {
      * @param oldToken 带tokenHead的旧token
      * @return 刷新后的token
      */
-    String refresh(String oldToken);
+    String refresh(String oldToken,int expireTime);
 
     /**
      * 判断token在指定时间内是否刚刚刷新过

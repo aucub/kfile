@@ -54,7 +54,8 @@ mybatis-plus:
     - classpath*:com/**/mapper/*.xml
 jwt:
   tokenHeader: Authorization
-  expireTime: 604800
+  expireTime: 864000
+  refreshExpireTime: 279936000
   tokenHead: "Bearer "
   secret: ENC(yOC0G5TudDG1V/nNpg1aCHxlsw549oLNbUO2osXxjhfvTw7irVKnP0hzWn2oDg34CuFGo2km7xmRP6Pi2OKruejylH8+TKmBMR8pHroDr+TefF6AfH1BREuZ84GURlFHJ+2rocAQS3u5Btnj2CzhiqD4bRBT9h7VtySlXSG1FaQ=)
 dromara:

@@ -21,16 +21,14 @@ public class TokenServiceImpl implements ITokenService {
 
     @Value("${jwt.secret}")
     private String secret;
-    @Value("${jwt.expireTime}")
-    private int expireTime;
 
     /**
      * 根据Claims生成JWT的token
      */
-    public String generateToken(Map<String, Object> claims) {
+    public String generateToken(Map<String, Object> claims,int expireTime) {
         return Jwts.builder()
                 .claims(claims)
-                .expiration(generateExpirationDate())
+                .expiration(generateExpirationDate(expireTime))
                 .signWith(new SecretKeySpec(Decoders.BASE64.decode(secret), "HmacSHA512"))
                 .compact();
     }
@@ -52,7 +50,7 @@ public class TokenServiceImpl implements ITokenService {
     /**
      * 生成token的过期时间
      */
-    public Date generateExpirationDate() {
+    public Date generateExpirationDate(int expireTime) {
         return new Date(System.currentTimeMillis() + expireTime * 1000L);
     }
 
@@ -116,12 +114,12 @@ public class TokenServiceImpl implements ITokenService {
     /**
      * 根据用户信息生成token
      */
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails,int expireTime) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", userDetails.getUsername());
         claims.put("iat", new Date());
         claims.put("authorities", userDetails.getAuthorities());
-        return generateToken(claims);
+        return generateToken(claims,expireTime);
     }
 
     /**
@@ -129,7 +127,7 @@ public class TokenServiceImpl implements ITokenService {
      *
      * @param oldToken token
      */
-    public String refresh(String oldToken) {
+    public String refresh(String oldToken,int expireTime) {
         if (!StringUtils.hasLength(oldToken)) {
             return null;
         }
@@ -147,7 +145,7 @@ public class TokenServiceImpl implements ITokenService {
             return oldToken;
         } else {
             claims.put("iat", new Date());
-            return generateToken(claims);
+            return generateToken(claims,expireTime);
         }
     }
 
