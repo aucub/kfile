@@ -14,12 +14,6 @@ public class UploadFileRequest {
     //扩展名
     private String ext;
 
-    //MIME类型
-    private String contentType;
-
-    //大小
-    private Long size;
-
     //上传路径
     private String directory;
 

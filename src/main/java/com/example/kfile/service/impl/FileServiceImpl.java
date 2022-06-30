@@ -1,11 +1,11 @@
 package com.example.kfile.service.impl;
 
 import com.example.kfile.entity.FileItem;
-import com.example.kfile.entity.request.UploadFileRequest;
 import com.example.kfile.service.FileDetailService;
 import com.example.kfile.service.IFileItemService;
 import com.example.kfile.service.IFileService;
 import com.example.kfile.service.IUserService;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.dromara.x.file.storage.core.FileInfo;
 import org.dromara.x.file.storage.core.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +14,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 public class FileServiceImpl implements IFileService {
@@ -50,6 +51,7 @@ public class FileServiceImpl implements IFileService {
         this.userService = userService;
     }
 
+    @Override
     public ResponseEntity<InputStreamResource> downloadFile(String fileItemId) {
         try {
             FileItem fileItem = fileItemService.getById(fileItemId);
@@ -77,12 +79,15 @@ public class FileServiceImpl implements IFileService {
         return true;
     }
 
-    public FileItem uploadFile(UploadFileRequest uploadFileRequest, MultipartFile file) {
-        FileInfo fileInfo = fileStorageService.of(file).setName(uploadFileRequest.getSha256sum()).upload();
-        FileItem fileItem = new FileItem();
-        fileItem.setCreatedBy(userService.getUserInfo().getId());
-        fileItemService.save(fileItem);
-        return fileItem;
+    @Override
+    public String uploadFile(InputStream inputStream) {
+        try {
+            String sha256Hash = DigestUtils.sha256Hex(inputStream);
+            FileInfo fileInfo = fileStorageService.of(inputStream).putAttr("sha256sum", sha256Hash).image().upload();
+            return sha256Hash;
+        } catch (IOException e) {
+            return "";
+        }
     }
 
 }

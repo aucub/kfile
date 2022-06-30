@@ -1,13 +1,12 @@
 package com.example.kfile.service;
 
-import com.example.kfile.entity.FileItem;
-import com.example.kfile.entity.request.UploadFileRequest;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.io.InputStream;
 
 public interface IFileService {
-    FileItem uploadFile(UploadFileRequest uploadFileRequest, MultipartFile file);
+    String uploadFile(InputStream inputStream);
 
     Boolean delete(String fileInfoId);
 

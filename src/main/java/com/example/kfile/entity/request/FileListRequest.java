@@ -10,12 +10,12 @@ import lombok.Data;
  */
 @Data
 public class FileListRequest {
-    private String directory="";
+    private String directory = "";
 
     @Valid
-    private OrderByTypeEnum orderBy= OrderByTypeEnum.NAME;
+    private OrderByTypeEnum orderBy = OrderByTypeEnum.NAME;
 
     @Valid
-    private OrderDirectionTypeEnum orderDirection= OrderDirectionTypeEnum.ASC;
+    private OrderDirectionTypeEnum orderDirection = OrderDirectionTypeEnum.ASC;
 
 }

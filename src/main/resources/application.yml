@@ -31,6 +31,10 @@ spring:
     redis:
       time-to-live: 3600000
       cache-null-values: true
+  servlet:
+    multipart:
+      max-file-size: 50KB
+      max-request-size: 50KB
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
@@ -71,3 +75,6 @@ dromara:
         base-path: build/local-plus/ # 基础路径
         path-patterns: /local-plus/** # 访问路径
         storage-path: build/tmp/local-plus/ # 存储路径
+tus:
+  upload:
+    directory: build/tmp/upload/tus

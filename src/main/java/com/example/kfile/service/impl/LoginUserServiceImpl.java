@@ -63,8 +63,8 @@ public class LoginUserServiceImpl implements ILoginUserService {
         selectUser.setUsername(username);
         LoginUser loginUser = loginUserMapper.selectOne(new QueryWrapper<>(selectUser));
         if (Objects.nonNull(loginUser)) {
-        loginUser.setPassword(password);
-        loginUserMapper.updateById(loginUser);
+            loginUser.setPassword(password);
+            loginUserMapper.updateById(loginUser);
         }
     }
 }

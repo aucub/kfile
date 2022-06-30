@@ -1,8 +1,6 @@
 package com.example.kfile.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.poi.excel.cell.CellSetter;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.kfile.entity.FileDetail;
@@ -26,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -62,25 +59,25 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
 
     @Override
     public List<FileEntry> list(FileListRequest fileListRequest) {
-        QueryWrapper<FileItem> queryWrapper=new QueryWrapper<FileItem>();
+        QueryWrapper<FileItem> queryWrapper = new QueryWrapper<FileItem>();
         // 检查文件项ID是否为空
         if (fileListRequest.getDirectory() == "") {
-            queryWrapper=queryWrapper.eq("created_by", userService.getUserInfo().getId());
-        }else{
-            queryWrapper=queryWrapper.eq("directory", fileListRequest.getDirectory());
+            queryWrapper = queryWrapper.eq("created_by", userService.getUserInfo().getId());
+        } else {
+            queryWrapper = queryWrapper.eq("directory", fileListRequest.getDirectory());
         }
-        if(fileListRequest.getOrderBy()== OrderByTypeEnum.TIME){
-            if(fileListRequest.getOrderDirection()== OrderDirectionTypeEnum.DESC){
-                queryWrapper=queryWrapper.orderByDesc("last_modified_date");
-            }else {
-                queryWrapper=queryWrapper.orderByAsc("last_modified_date");
+        if (fileListRequest.getOrderBy() == OrderByTypeEnum.TIME) {
+            if (fileListRequest.getOrderDirection() == OrderDirectionTypeEnum.DESC) {
+                queryWrapper = queryWrapper.orderByDesc("last_modified_date");
+            } else {
+                queryWrapper = queryWrapper.orderByAsc("last_modified_date");
             }
         }
-        if(fileListRequest.getOrderBy()== OrderByTypeEnum.NAME){
-            if(fileListRequest.getOrderDirection()== OrderDirectionTypeEnum.DESC){
-                queryWrapper=queryWrapper.orderByDesc("name");
-            }else {
-                queryWrapper=queryWrapper.orderByAsc("name");
+        if (fileListRequest.getOrderBy() == OrderByTypeEnum.NAME) {
+            if (fileListRequest.getOrderDirection() == OrderDirectionTypeEnum.DESC) {
+                queryWrapper = queryWrapper.orderByDesc("name");
+            } else {
+                queryWrapper = queryWrapper.orderByAsc("name");
             }
         }
         // 查询文件项列表
@@ -120,7 +117,7 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
 
     @Override
     public Boolean newFolder(String directory, String name) {
-        FileListRequest fileListRequest=new FileListRequest();
+        FileListRequest fileListRequest = new FileListRequest();
         fileListRequest.setDirectory(directory);
         for (FileEntry fileEntry : list(fileListRequest)) {
             if (fileEntry.getName().equals(name)) {
@@ -147,19 +144,19 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
     }
 
     @Override
-    public FileDetail checkUpload(UploadFileRequest uploadFileRequest) {
-        FileDetail fileDetail = fileDetailService.getOne(new QueryWrapper<FileDetail>().eq("sha256sum", uploadFileRequest.getSha256sum()));
+    public FileDetail checkUpload(String sha256sum) {
+        FileDetail fileDetail = fileDetailService.getOne(new QueryWrapper<FileDetail>().eq("sha256sum", sha256sum));
         return fileDetail;
     }
 
     @Override
     @Transactional
     // 删除文件
-    public Boolean deleteFile(String fileItemId){
+    public Boolean deleteFile(String fileItemId) {
         MutableGraph<String> mutableGraph = buildMutableGraphByFileId(fileItemId);
         if (Boolean.TRUE.equals(deleteNodeAndDescendants(mutableGraph, fileItemId))) {
             return true;
-        } else{
+        } else {
             return false;
         }
     }
@@ -182,7 +179,7 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
         }
         // 检查文件是否存在
         FileItem fileItem = getById(fileItemId);
-        if (fileItem==null||fileItem.getDirectory().equals(targetDirectory)||fileItem.getDirectory().isEmpty()) {
+        if (fileItem == null || fileItem.getDirectory().equals(targetDirectory) || fileItem.getDirectory().isEmpty()) {
             return false;
         }
         // 更新文件目录
@@ -200,7 +197,7 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
      */
     public Boolean renameFile(String fileItemId, String newName) {
         FileItem fileItem = getById(fileItemId);
-        FileListRequest fileListRequest=new FileListRequest();
+        FileListRequest fileListRequest = new FileListRequest();
         fileListRequest.setDirectory(fileItem.getDirectory());
         // 检查文件项是否存在
         for (FileEntry fileEntry : list(fileListRequest)) {
@@ -243,7 +240,7 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
         boolean canDelete = true;
         Set<String> successors = mutableGraph.successors(nodeId);
         for (String successor : successors) {
-            if(!Boolean.TRUE.equals(deleteNodeAndDescendants(mutableGraph, successor))){
+            if (!Boolean.TRUE.equals(deleteNodeAndDescendants(mutableGraph, successor))) {
                 canDelete = false;
             }
         }

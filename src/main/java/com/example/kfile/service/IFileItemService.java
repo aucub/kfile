@@ -27,7 +27,7 @@ public interface IFileItemService extends IService<FileItem> {
 
     Boolean newFile(UploadFileRequest uploadFileRequest, FileDetail fileDetail);
 
-    FileDetail checkUpload(UploadFileRequest uploadFileRequest);
+    FileDetail checkUpload(String sha256sum);
 
     Boolean deleteFile(String fileItemId);
 

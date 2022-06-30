@@ -44,10 +44,8 @@ public class LoginUser implements Serializable {
     @Size(min = 8, max = 22, message = "密码长度应在8-22位之间")
     private String password;
 
-    private Boolean enabled;
-
     @TableLogic
-    private Integer deleted;
+    private Boolean enabled;
 
     @NotBlank(message = "用户名不能为空")
     @Email

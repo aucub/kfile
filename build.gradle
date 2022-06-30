@@ -37,6 +37,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-json'
     implementation 'cn.hutool:hutool-all:5.8.23'
     implementation 'org.dromara.x-file-storage:x-file-storage-spring:2.0.0'
+    implementation 'me.desair.tus:tus-java-server:1.0.0-3.0'
+    implementation 'commons-codec:commons-codec:1.16.0'
     implementation 'com.google.guava:guava:32.1.2-jre'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'org.springframework.boot:spring-boot-starter-validation'

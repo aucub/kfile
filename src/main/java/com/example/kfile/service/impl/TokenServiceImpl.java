@@ -25,7 +25,7 @@ public class TokenServiceImpl implements ITokenService {
     /**
      * 根据Claims生成JWT的token
      */
-    public String generateToken(Map<String, Object> claims,int expireTime) {
+    public String generateToken(Map<String, Object> claims, int expireTime) {
         return Jwts.builder()
                 .claims(claims)
                 .expiration(generateExpirationDate(expireTime))
@@ -114,12 +114,12 @@ public class TokenServiceImpl implements ITokenService {
     /**
      * 根据用户信息生成token
      */
-    public String generateToken(UserDetails userDetails,int expireTime) {
+    public String generateToken(UserDetails userDetails, int expireTime) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", userDetails.getUsername());
         claims.put("iat", new Date());
         claims.put("authorities", userDetails.getAuthorities());
-        return generateToken(claims,expireTime);
+        return generateToken(claims, expireTime);
     }
 
     /**
@@ -127,7 +127,7 @@ public class TokenServiceImpl implements ITokenService {
      *
      * @param oldToken token
      */
-    public String refresh(String oldToken,int expireTime) {
+    public String refresh(String oldToken, int expireTime) {
         if (!StringUtils.hasLength(oldToken)) {
             return null;
         }
@@ -145,7 +145,7 @@ public class TokenServiceImpl implements ITokenService {
             return oldToken;
         } else {
             claims.put("iat", new Date());
-            return generateToken(claims,expireTime);
+            return generateToken(claims, expireTime);
         }
     }
 
