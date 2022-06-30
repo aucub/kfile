@@ -2,7 +2,7 @@ package com.example.kfile.security;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.json.JSONUtil;
-import com.example.kfile.entity.WebLog;
+import com.example.kfile.entity.Log;
 import com.example.kfile.utils.RequestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -26,18 +26,18 @@ import java.util.*;
 @Slf4j
 @Component
 @Order(1)
-public class WebLogAspect {
+public class LogAspect {
 
     @Pointcut("execution(public * com.example.kfile.controller.*.*(..))")
     public void webLog() {
     }
 
     @Before("webLog()")
-    public void doBefore(JoinPoint joinPoint) throws Throwable {
+    public void doBefore(JoinPoint joinPoint) {
     }
 
     @AfterReturning(value = "webLog()", returning = "ret")
-    public void doAfterReturning(Object ret) throws Throwable {
+    public void doAfterReturning(Object ret) {
     }
 
     @Around("webLog()")
@@ -47,22 +47,22 @@ public class WebLogAspect {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = Objects.requireNonNull(attributes).getRequest();
         //记录请求信息
-        WebLog webLog = new WebLog();
+        Log log = new Log();
         Object result = joinPoint.proceed();
         Signature signature = joinPoint.getSignature();
         MethodSignature methodSignature = (MethodSignature) signature;
         Method method = methodSignature.getMethod();
         long endTime = System.currentTimeMillis();
-        webLog.setUsername(request.getRemoteUser());
-        webLog.setIp(RequestUtil.getRequestIp(request));
-        webLog.setMethod(request.getMethod());
-        webLog.setParameter(getParameter(method, joinPoint.getArgs()));
-        webLog.setResult(result);
-        webLog.setSpendTime((int) (endTime - startTime));
-        webLog.setStartTime(startTime);
-        webLog.setUri(request.getRequestURI());
-        webLog.setUrl(request.getRequestURL().toString());
-        log.info("{}", JSONUtil.parse(webLog));
+        log.setUsername(request.getRemoteUser());
+        log.setIp(RequestUtil.getRequestIp(request));
+        log.setMethod(request.getMethod());
+        log.setParameter(getParameter(method, joinPoint.getArgs()));
+        log.setResult(result);
+        log.setSpendTime((int) (endTime - startTime));
+        log.setStartTime(startTime);
+        log.setUri(request.getRequestURI());
+        log.setUrl(request.getRequestURL().toString());
+        LogAspect.log.info("{}", JSONUtil.parse(log));
         return result;
     }
 

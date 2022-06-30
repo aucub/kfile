@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode
-public class WebLog {
+public class Log {
 
     /**
      * 操作用户
