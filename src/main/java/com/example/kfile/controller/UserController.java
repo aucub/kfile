@@ -83,8 +83,9 @@ public class UserController {
 
     @PostMapping("/register")
     public Result register(@Validated @RequestBody UserDto userDto) {
-        if (!loginUserService.checkMail(userDto.getMail()))
+        if (loginUserService.checkMail(userDto.getMail()))
             return Result.error("邮箱已被注册");
+        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         if (loginUserService.register(userDto)) {
             return Result.success("注册成功");
         }

@@ -52,9 +52,9 @@ public class LoginUserServiceImpl implements ILoginUserService {
         LoginUser selectUser = new LoginUser();
         selectUser.setMail(mail);
         if (Objects.nonNull(loginUserMapper.selectOne(new QueryWrapper<>(selectUser)))) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     @Override

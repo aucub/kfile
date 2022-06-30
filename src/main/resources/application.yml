@@ -11,7 +11,7 @@ spring:
     password: ENC(fkV7btA3Q+QzP+Pg/VIs33uEWLK35LiXECrVNJMyrjJFr4vA5KfV8nbg7Klp0TpjkgGRgF/0WFnK3gnkfX3rGg==)
   data:
     redis:
-      url: ENC(VOEF25z+ArjJrEc1cmVGekxXQZd/klDAoIg3udQV5UKVu7y92XocAd8MJ37PRpxlxgJVmNMTRnnemB79KFRFTd+9ZPhNASmU4hjXw6TXjXYO8XRDRp8s2KfnWrWAMfKO81s0jidfgm517pMXKjVBQUV4kMDZFs68K+HUG31Ta7O3MMq4jCkpyx/He6zlYTeo6Z8FRPFjywdKE1z4QX34hw==)
+      url: ENC(Ah9Yh9t0Mp3Jf1KKrc0r/czhoEKWKxsIG20iWIKZ44LVzHBZHF3vRqwiybjgv4t/uxJGrEmEhT3Y/1x8oaaFYjNkgxKCtn7rXHMePFoRgETYBOrBMiHMVzkRPL1kwwovizuBCimeUyBrxuYHILJR+LUvjEETLjThFYiqziy6dZhce9YZYdUksLKtFtemXkmW)
       timeout: 3000ms
       lettuce:
         pool:
@@ -56,6 +56,7 @@ jwt:
   tokenHeader: Authorization
   expireTime: 604800
   tokenHead: "Bearer "
+  secret: ENC(yOC0G5TudDG1V/nNpg1aCHxlsw549oLNbUO2osXxjhfvTw7irVKnP0hzWn2oDg34CuFGo2km7xmRP6Pi2OKruejylH8+TKmBMR8pHroDr+TefF6AfH1BREuZ84GURlFHJ+2rocAQS3u5Btnj2CzhiqD4bRBT9h7VtySlXSG1FaQ=)
 dromara:
   x-file-storage: #文件存储配置
     default-platform: local-plus-1 #默认使用的存储平台
