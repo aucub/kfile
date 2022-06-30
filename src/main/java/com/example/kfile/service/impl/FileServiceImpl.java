@@ -5,6 +5,7 @@ import com.example.kfile.service.FileDetailService;
 import com.example.kfile.service.IFileItemService;
 import com.example.kfile.service.IFileService;
 import com.example.kfile.service.IUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.dromara.x.file.storage.core.FileInfo;
 import org.dromara.x.file.storage.core.FileStorageService;
@@ -20,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+@Slf4j
 @Service
 public class FileServiceImpl implements IFileService {
 
@@ -69,7 +71,7 @@ public class FileServiceImpl implements IFileService {
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(resource);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return null;
     }

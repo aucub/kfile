@@ -51,10 +51,7 @@ public class LoginUserServiceImpl implements ILoginUserService {
     public Boolean checkMail(String mail) {
         LoginUser selectUser = new LoginUser();
         selectUser.setMail(mail);
-        if (Objects.nonNull(loginUserMapper.selectOne(new QueryWrapper<>(selectUser)))) {
-            return true;
-        }
-        return false;
+        return Objects.nonNull(loginUserMapper.selectOne(new QueryWrapper<>(selectUser)));
     }
 
     @Override

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
+import lombok.extern.slf4j.Slf4j;
 import org.dromara.x.file.storage.core.FileInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ import java.util.Set;
  * @author aucub
  * @since 2023-11-12
  */
+@Slf4j
 @Service
 public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> implements IFileItemService {
 
@@ -68,9 +70,9 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
 
     @Override
     public List<FileEntry> list(FileListRequest fileListRequest) {
-        QueryWrapper<FileItem> queryWrapper = new QueryWrapper<FileItem>();
+        QueryWrapper<FileItem> queryWrapper = new QueryWrapper<>();
         // 检查文件项ID是否为空
-        if (fileListRequest.getDirectory() == "") {
+        if (fileListRequest.getDirectory().isEmpty()) {
             queryWrapper = queryWrapper.eq("created_by", userService.getUserInfo().getId());
         } else {
             queryWrapper = queryWrapper.eq("directory", fileListRequest.getDirectory());
@@ -158,8 +160,7 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
 
     @Override
     public FileDetail checkUpload(String sha256sum) {
-        FileDetail fileDetail = fileDetailService.getOne(new QueryWrapper<FileDetail>().eq("sha256sum", sha256sum));
-        return fileDetail;
+        return fileDetailService.getOne(new QueryWrapper<FileDetail>().eq("sha256sum", sha256sum));
     }
 
     @Override
@@ -175,7 +176,7 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
                     List<Acl> aclList = OBJECT_MAPPER.readValue(share.getAclList(), type);
                     if (aclList.get(0) != null) return aclList.get(0).getPermission();
                 } catch (JsonProcessingException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage());
                 }
             }
             if (share.getAcl().equals(AclEnum.ACL)) {
@@ -183,12 +184,12 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
                     CollectionType type = OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, Acl.class);
                     List<Acl> aclList = OBJECT_MAPPER.readValue(share.getAclList(), type);
                     for (Acl acl : aclList) {
-                        if (acl.getId().equals(id)) {
+                        if (acl.getId().toString().equals(id)) {
                             return acl.getPermission();
                         }
                     }
                 } catch (JsonProcessingException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage());
                 }
             }
         }
@@ -200,11 +201,7 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
     // 删除文件
     public Boolean deleteFile(String fileItemId) {
         MutableGraph<String> mutableGraph = buildMutableGraphByFileId(fileItemId);
-        if (Boolean.TRUE.equals(deleteNodeAndDescendants(mutableGraph, fileItemId))) {
-            return true;
-        } else {
-            return false;
-        }
+        return Boolean.TRUE.equals(deleteNodeAndDescendants(mutableGraph, fileItemId));
     }
 
     @Override
@@ -299,21 +296,17 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
 
     @Transactional
     public String copyNodeAndDescendants(MutableGraph<String> mutableGraph, String nodeId, String directory) {
-        boolean canCopy = false;
-        String newNodeValue = "null";
+        String newNodeValue;
         FileItem fileItem = getById(nodeId);
         fileItem.setCreatedBy(userService.getUserInfo().getId());
         fileItem.setDirectory(directory);
         fileItemMapper.insert(fileItem);
         newNodeValue = fileItem.getId();
         modifyNodeValue(mutableGraph, nodeId, newNodeValue);
-        canCopy = true;
         Set<String> successors = mutableGraph.successors(newNodeValue);
-        if (canCopy) {
-            // 先序遍历节点的子节点
-            for (String successor : successors) {
-                copyNodeAndDescendants(mutableGraph, successor, newNodeValue);
-            }
+        // 先序遍历节点的子节点
+        for (String successor : successors) {
+            copyNodeAndDescendants(mutableGraph, successor, newNodeValue);
         }
         return newNodeValue;
     }

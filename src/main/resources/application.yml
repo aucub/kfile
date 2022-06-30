@@ -77,4 +77,4 @@ dromara:
         storage-path: build/tmp/local-plus/ # 存储路径
 tus:
   upload:
-    directory: build/tmp/upload/tus
+    directory: ./build/tmp/upload/tus

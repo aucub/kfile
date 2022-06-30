@@ -40,19 +40,27 @@ import java.util.List;
 @RequestMapping("/file")
 @CrossOrigin(exposedHeaders = {"Location", "Upload-Offset"})
 public class FileController {
-    @Autowired
+
     IFileItemService fileItemService;
 
-    @Autowired
     IFileService fileService;
 
-    @Autowired
     IUserService userService;
+
+    private TusFileUploadService tusFileUploadService=new TusFileUploadService().withStoragePath("./build/tmp/upload/tus");
+
     @Autowired
-    private TusFileUploadService tusFileUploadService;
-    @Value("${tus.upload.directory}")
-    private String tusUploadDirectoryString;
-    private Path tusUploadDirectory = Paths.get(tusUploadDirectoryString);
+    public void setFileItemService(IFileItemService fileItemService) {
+        this.fileItemService = fileItemService;
+    }
+    @Autowired
+    public void setFileService(IFileService fileService) {
+        this.fileService = fileService;
+    }
+    @Autowired
+    public void setUserService(IUserService userService) {
+        this.userService = userService;
+    }
 
     //创建文件夹
     @PostMapping("/mkdir")
@@ -117,7 +125,7 @@ public class FileController {
     })
     public Result list(@Valid @RequestBody FileListRequest fileListRequest) {
         List<FileEntry> fileEntries = fileItemService.list(fileListRequest);
-        if (fileEntries != null && fileEntries.size() > 0) {
+        if (fileEntries != null && !fileEntries.isEmpty()) {
             return Result.success(fileEntries);
         } else return Result.error("未找到文件");
     }
@@ -160,19 +168,6 @@ public class FileController {
             }
         }
         return false;
-    }
-
-
-    @Scheduled(fixedDelayString = "PT24H")
-    private void cleanup() {
-        Path locksDir = this.tusUploadDirectory.resolve("locks");
-        if (Files.exists(locksDir)) {
-            try {
-                this.tusFileUploadService.cleanup();
-            } catch (IOException e) {
-                log.error("error during cleanup", e);
-            }
-        }
     }
 
     @PostMapping("/new")

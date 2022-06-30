@@ -153,7 +153,7 @@ public class UserController {
 
     @PostMapping("/updatePassword")
     public Result updatePassword(@RequestParam String username,
-                                 @RequestParam String password) throws Exception {
+                                 @RequestParam String password){
         loginUserService.updatePassword(username, password);
         return Result.success("密码修改成功");
     }
