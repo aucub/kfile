@@ -1,70 +1,53 @@
 package com.example.kfile.service;
 
-import com.example.kfile.domain.ShareLink;
-import com.example.kfile.repository.FileDetailRepository;
-import com.example.kfile.repository.SandBoxRepository;
-import com.example.kfile.repository.ShareLinkRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.example.kfile.domain.result.FileEntry;
 
-@Service
-public class FileService {
-    FileDetailRepository fileInfoRepository;
-    SandBoxRepository sandBoxRepository;
-    ShareLinkRepository shareLinkRepository;
+import java.io.FileNotFoundException;
+import java.util.List;
 
-    @Autowired
-    public void setFileInfoRepository(FileDetailRepository fileInfoRepository) {
-        this.fileInfoRepository = fileInfoRepository;
-    }
+/**
+ * 文件服务接口
+ */
+public interface FileService {
 
-    @Autowired
-    public void setSandBoxRepository(SandBoxRepository sandBoxRepository) {
-        this.sandBoxRepository = sandBoxRepository;
-    }
+    /***
+     * 获取指定路径下的文件及文件夹
+     *
+     */
+    List<FileEntry> fileList(String fileItemId) throws Exception;
 
-    @Autowired
-    public void setShareLinkRepository(ShareLinkRepository shareLinkRepository) {
-        this.shareLinkRepository = shareLinkRepository;
-    }
+    /**
+     * 获取单个文件信息
+     */
+    FileEntry getFileEntry(String fileItemId) throws FileNotFoundException;
 
-    public String getOwner(String fileId) {
-        if (fileInfoRepository.findById(fileId).get().getPath() == null || fileInfoRepository.findById(fileId).get().getPath().equals("")) {
-            return sandBoxRepository.findById(fileId).get().getOwner();
-        } else {
-            return getOwner(fileInfoRepository.findById(fileId).get().getPath());
-        }
-    }
+    /**
+     * 创建新文件夹
+     */
+    FileEntry newFolder(String directory, String name);
 
-    public Boolean checkFileAndShare(String fileItemId, String url) {
-        String path = shareLinkRepository.findById(fileItemId).get().getFileItemId();
-        if (fileItemId.equals(path)) {
-            return true;
-        } else {
-            do {
-                fileItemId = fileInfoRepository.findById(fileItemId).get().getPath();
-            } while ((!fileItemId.equals(path)) || (!fileItemId.equals("")) || (fileItemId != null));
-            if (fileItemId.equals(path)) {
-                return true;
-            } else return false;
-        }
-    }
+    /**
+     * 删除文件
+     */
+    String deleteFile(String fileItemId) throws FileNotFoundException;
 
-    public int getShareOfAcl(String url, String userName) {
-        ShareLink shareLink = shareLinkRepository.findById(url).get();
-        if (shareLink.getUsers().contains(userName)) {
-            for (int i = 0; i < shareLink.getUsers().size(); i++) {
-                if (shareLink.getUsers().get(i).equals(userName)) {
-                    return shareLink.getAclist().get(i);
-                }
-            }
-        }
-        if (shareLink.getAcl().equals("public")) {
-            return shareLink.getAllow();
-        } else if (shareLink.getAcl().equals("users") && userName != null && (!userName.equals(""))) {
-            return shareLink.getAllow();
-        }
-        return 0;
-    }
+    /**
+     * 复制文件
+     */
+    FileEntry copyFile(String fileItemId, String targetDirectory) throws FileNotFoundException;
 
+    /**
+     * 移动文件
+     */
+    FileEntry moveFile(String fileItemId, String targetDirectory);
+
+    /**
+     * 重命名文件
+     */
+    FileEntry renameFile(String fileItemId, String newName) throws FileNotFoundException;
+
+    /**
+     * 获取文件所有者
+     */
+    String getOwner(String fileId);
 }

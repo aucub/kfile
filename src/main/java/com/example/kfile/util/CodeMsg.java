@@ -38,6 +38,8 @@ public class CodeMsg {
     public static CodeMsg STORAGE_SOURCE_FILE_PROXY_DOWNLOAD_FAIL = new CodeMsg("50206", "文件下载失败");
     public static CodeMsg STORAGE_SOURCE_FILE_GET_ITEM_FAIL = new CodeMsg("50207", "文件不存在或请求异常");
     public static CodeMsg STORAGE_SOURCE_FILE_DISABLE_PROXY_DOWNLOAD = new CodeMsg("50208", "非法操作, 当前文件不支持此类下载方式");
+    public static CodeMsg STORAGE_SOURCE_FILE_COPY_FAIL = new CodeMsg("50209", "复制失败");
+    public static CodeMsg STORAGE_SOURCE_FILE_MOVE_FAIL = new CodeMsg("50210", "移动失败");
     /**
      * 错误码
      * <p>

@@ -44,17 +44,6 @@ public class GlobalExceptionHandler {
         return AjaxJson.getError(e.getResultMessage());
     }
 
-
-    @ExceptionHandler({FileRuntimeException.class})
-    @ResponseBody
-    @ResponseStatus
-    public AjaxJson<String> getFileInfoException(FileRuntimeException e) {
-        if (e.getCause() != null) {
-            log.error("FileRuntimeException", e);
-        }
-        return AjaxJson.getError(e.getMessage());
-    }
-
     @ExceptionHandler({FileNotFoundException.class})
     @ResponseBody
     @ResponseStatus(HttpStatus.NOT_FOUND)
