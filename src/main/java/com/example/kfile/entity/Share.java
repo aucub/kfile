@@ -1,6 +1,7 @@
 package com.example.kfile.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.example.kfile.entity.enums.AclEnum;
 import lombok.Data;
 
 import java.io.Serial;
@@ -21,11 +22,8 @@ public class Share implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 链接
-     */
-    @TableId("url")
-    private String url;
+    @TableId
+    private Integer id;
 
     /**
      * 文件ID
@@ -33,12 +31,12 @@ public class Share implements Serializable {
     private String fileItemId;
 
     /**
-     * 访问范围, example = "public","aclist","users"
+     * 访问范围
      */
-    private String acl;
+    private AclEnum acl;
 
     /**
-     * 权限,4=access,2=download,1=upload
+     * 权限
      */
     private String aclList;
 
@@ -48,12 +46,12 @@ public class Share implements Serializable {
     private String password;
 
     /**
-     * 创建时间, example = "2021-11-22 10:05"
+     * 创建时间
      */
     private Date createdDate;
 
     /**
-     * 过期时间, example = "2021-11-23 10:05"
+     * 过期时间
      */
     private Date expireDate;
 

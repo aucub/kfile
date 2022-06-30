@@ -3,6 +3,7 @@ package com.example.kfile.controller;
 import com.example.kfile.entity.FileDetail;
 import com.example.kfile.entity.FileItem;
 import com.example.kfile.entity.Result;
+import com.example.kfile.entity.enums.FilePermissionEnum;
 import com.example.kfile.entity.enums.FileTypeEnum;
 import com.example.kfile.entity.request.*;
 import com.example.kfile.entity.result.FileEntry;
@@ -56,21 +57,26 @@ public class FileController {
     //创建文件夹
     @PostMapping("/mkdir")
     @FilePermissionCheck({
-            @FilePermissionCheck.FieldPermission(field = "directory", permission = "upload")
+            @FilePermissionCheck.FieldPermission(field = "directory", permission = FilePermissionEnum.UPLOAD)
     })
     public Result mkdir(@Valid @RequestBody NewFolderRequest newFolderRequest) {
         return Result.success("创建成功", fileItemService.newFolder(newFolderRequest.getDirectory(), newFolderRequest.getName()));
     }
 
-    @Transactional
     @PostMapping("/delete")
-    public Result deleteFile(@Valid @RequestBody DeleteFileRequest deleteFileRequest) throws FileNotFoundException {
+    @FilePermissionCheck({
+            @FilePermissionCheck.FieldPermission(field = "id", permission = FilePermissionEnum.OWNER)
+    })
+    public Result deleteFile(@Valid @RequestBody DeleteFileRequest deleteFileRequest) {
         return Result.success(fileItemService.deleteFile(deleteFileRequest.getId()));
     }
 
     //重命名文件
     @PostMapping("/rename")
-    public Result rename(@Valid @RequestBody RenameFileRequest renameFileRequest) throws FileNotFoundException {
+    @FilePermissionCheck({
+            @FilePermissionCheck.FieldPermission(field = "id", permission = FilePermissionEnum.OWNER)
+    })
+    public Result rename(@Valid @RequestBody RenameFileRequest renameFileRequest) {
         if (fileItemService.renameFile(renameFileRequest.getId(), renameFileRequest.getNewName())) {
             return Result.success("重命名成功");
         } else {
@@ -80,6 +86,10 @@ public class FileController {
 
     //移动文件
     @PostMapping("/move")
+    @FilePermissionCheck({
+            @FilePermissionCheck.FieldPermission(field = "id", permission = FilePermissionEnum.OWNER),
+            @FilePermissionCheck.FieldPermission(field = "target", permission = FilePermissionEnum.OWNER)
+    })
     public Result moveFile(@Valid @RequestBody MoveFileRequest moveFileRequest) {
         if (fileItemService.moveFile(moveFileRequest.getId(), moveFileRequest.getTarget())) {
             return Result.success("移动成功");
@@ -90,7 +100,11 @@ public class FileController {
     //复制文件
     @Transactional
     @PostMapping("/copy")
-    public Result copyFile(@Valid @RequestBody CopyFileRequest copyFileRequest) throws FileNotFoundException {
+    @FilePermissionCheck({
+            @FilePermissionCheck.FieldPermission(field = "id", permission = FilePermissionEnum.DOWNLOAD),
+            @FilePermissionCheck.FieldPermission(field = "target", permission = FilePermissionEnum.OWNER)
+    })
+    public Result copyFile(@Valid @RequestBody CopyFileRequest copyFileRequest) {
         if (fileItemService.copyFile(copyFileRequest.getId(), copyFileRequest.getTarget())) {
             return Result.success("移动成功");
         }
@@ -98,6 +112,9 @@ public class FileController {
     }
 
     @PostMapping("/list")
+    @FilePermissionCheck({
+            @FilePermissionCheck.FieldPermission(field = "directory", permission = FilePermissionEnum.ACCESS)
+    })
     public Result list(@Valid @RequestBody FileListRequest fileListRequest) {
         List<FileEntry> fileEntries = fileItemService.list(fileListRequest);
         if (fileEntries != null && fileEntries.size() > 0) {
@@ -106,6 +123,9 @@ public class FileController {
     }
 
     @PostMapping("/info")
+    @FilePermissionCheck({
+            @FilePermissionCheck.FieldPermission(field = "id", permission = FilePermissionEnum.ACCESS)
+    })
     public Result fileItem(@Valid @RequestBody FileInfoRequest fileInfoRequest) {
         try {
             FileEntry fileEntry = fileItemService.getFileEntry(fileInfoRequest.getId());
@@ -117,8 +137,8 @@ public class FileController {
 
     @RequestMapping(value = {"/upload", "/upload/**"}, method = {RequestMethod.POST,
             RequestMethod.PATCH, RequestMethod.HEAD, RequestMethod.DELETE, RequestMethod.GET})
-    public String upload(HttpServletRequest servletRequest,
-                         HttpServletResponse servletResponse) throws IOException {
+    public Boolean upload(HttpServletRequest servletRequest,
+                          HttpServletResponse servletResponse) throws IOException {
         this.tusFileUploadService.process(servletRequest, servletResponse);
         String uploadURI = servletRequest.getRequestURI();
         UploadInfo uploadInfo = null;
@@ -139,7 +159,7 @@ public class FileController {
                 log.error("delete upload", e);
             }
         }
-        return "";
+        return false;
     }
 
 
@@ -156,6 +176,9 @@ public class FileController {
     }
 
     @PostMapping("/new")
+    @FilePermissionCheck({
+            @FilePermissionCheck.FieldPermission(field = "directory", permission = FilePermissionEnum.UPLOAD)
+    })
     public Result fileItem(@Valid @RequestBody UploadFileRequest uploadFileRequest) {
         FileDetail fileDetail = fileItemService.checkUpload(uploadFileRequest.getSha256sum());
         if (fileDetail != null) {

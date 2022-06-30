@@ -44,20 +44,20 @@ create table if not exists file_item
     last_modified_date datetime default CURRENT_TIMESTAMP not null,
     created_by         int                                null,
     last_modified_by   int                                null,
-    share              varchar(255)                       null,
+    share              int                                null,
     description        varchar(255)                       null
 );
 
 create table if not exists share
 (
-    url                varchar(255)                       not null comment '链接, example = "voldd3"'
+    id                 int auto_increment
         primary key,
-    file_item_id       varchar(255)                       null comment '文件ID',
-    acl                varchar(255)                       null comment '访问范围, example = "public","aclist","users"',
-    acl_list           json                               null comment '权限,4=access,2=download,1=upload',
-    password           varchar(255)                       null comment '密码',
-    created_date       datetime default CURRENT_TIMESTAMP not null comment '创建时间, example = "2021-11-22 10:05"',
-    expire_date        datetime                           null comment '过期时间, example = "2021-11-23 10:05"',
+    file_item_id       varchar(255)                       null,
+    acl                varchar(255)                       null,
+    acl_list           json                               null,
+    password           varchar(255)                       null,
+    created_date       datetime default CURRENT_TIMESTAMP not null,
+    expire_date        datetime                           null,
     last_modified_date datetime default CURRENT_TIMESTAMP not null,
     created_by         int                                null,
     last_modified_by   int                                null

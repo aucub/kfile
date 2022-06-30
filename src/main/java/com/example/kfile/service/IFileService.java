@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import java.io.InputStream;
 
 public interface IFileService {
-    String uploadFile(InputStream inputStream);
+    Boolean uploadFile(InputStream inputStream);
 
     Boolean delete(String fileInfoId);
 

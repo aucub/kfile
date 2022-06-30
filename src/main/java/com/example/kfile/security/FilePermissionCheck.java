@@ -1,5 +1,7 @@
 package com.example.kfile.security;
 
+import com.example.kfile.entity.enums.FilePermissionEnum;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,6 +15,6 @@ public @interface FilePermissionCheck {
     @interface FieldPermission {
         String field();
 
-        String permission();
+        FilePermissionEnum permission();
     }
 }

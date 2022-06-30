@@ -3,12 +3,11 @@ package com.example.kfile.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.kfile.entity.Acl;
 import com.example.kfile.entity.FileDetail;
 import com.example.kfile.entity.FileItem;
 import com.example.kfile.entity.Share;
-import com.example.kfile.entity.enums.FileTypeEnum;
-import com.example.kfile.entity.enums.OrderByTypeEnum;
-import com.example.kfile.entity.enums.OrderDirectionTypeEnum;
+import com.example.kfile.entity.enums.*;
 import com.example.kfile.entity.request.FileListRequest;
 import com.example.kfile.entity.request.UploadFileRequest;
 import com.example.kfile.entity.result.FileEntry;
@@ -17,6 +16,9 @@ import com.example.kfile.service.FileDetailService;
 import com.example.kfile.service.IFileItemService;
 import com.example.kfile.service.IShareService;
 import com.example.kfile.service.IUserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 import org.dromara.x.file.storage.core.FileInfo;
@@ -39,6 +41,8 @@ import java.util.Set;
  */
 @Service
 public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> implements IFileItemService {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     FileItemMapper fileItemMapper;
     FileDetailService fileDetailService;
@@ -138,14 +142,18 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
     }
 
     @Override
-    public Boolean newFile(UploadFileRequest uploadFileRequest, FileDetail fileDetail) {
-        FileItem fileItem = new FileItem();
-        fileItem.setUrl(fileDetail.getUrl());
-        fileItem.setName(uploadFileRequest.getName());
-        fileItem.setType(FileTypeEnum.FILE);
-        fileItem.setDirectory(uploadFileRequest.getDirectory());
-        fileItem.setCreatedBy(userService.getUserInfo().getId());
-        return save(fileItem);
+    public Boolean newFile(UploadFileRequest uploadFileRequest) {
+        FileDetail fileDetail = checkUpload(uploadFileRequest.getSha256sum());
+        if (fileDetail != null) {
+            FileItem fileItem = new FileItem();
+            fileItem.setUrl(fileDetail.getUrl());
+            fileItem.setName(uploadFileRequest.getName());
+            fileItem.setType(FileTypeEnum.FILE);
+            fileItem.setDirectory(uploadFileRequest.getDirectory());
+            fileItem.setCreatedBy(userService.getUserInfo().getId());
+            return save(fileItem);
+        }
+        return false;
     }
 
     @Override
@@ -155,18 +163,36 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
     }
 
     @Override
-    public String getPermission(String id) {
+    public FilePermissionEnum getPermission(String id) {
         FileItem fileItem = getById(id);
         if (fileItem.getCreatedBy().equals(userService.getUserInfo().getId())) {
-            return "7";
-        } else if (!fileItem.getShare().isEmpty()) {
+            return FilePermissionEnum.OWNER;
+        } else if (fileItem.getShare() != null) {
             Share share = shareService.getById(fileItem.getShare());
-            if (share.getAcl().equals("users")) return "7";
-            if (share.getAcl().equals("acl")) {
-                share.getAclList();
+            if (share.getAcl().equals(AclEnum.USER)) {
+                try {
+                    CollectionType type = OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, Acl.class);
+                    List<Acl> aclList = OBJECT_MAPPER.readValue(share.getAclList(), type);
+                    if (aclList.get(0) != null) return aclList.get(0).getPermission();
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (share.getAcl().equals(AclEnum.ACL)) {
+                try {
+                    CollectionType type = OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, Acl.class);
+                    List<Acl> aclList = OBJECT_MAPPER.readValue(share.getAclList(), type);
+                    for (Acl acl : aclList) {
+                        if (acl.getId().equals(id)) {
+                            return acl.getPermission();
+                        }
+                    }
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
             }
         }
-        return "0";
+        return null;
     }
 
     @Override

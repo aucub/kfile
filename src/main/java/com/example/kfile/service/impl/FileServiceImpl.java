@@ -80,13 +80,13 @@ public class FileServiceImpl implements IFileService {
     }
 
     @Override
-    public String uploadFile(InputStream inputStream) {
+    public Boolean uploadFile(InputStream inputStream) {
         try {
             String sha256Hash = DigestUtils.sha256Hex(inputStream);
-            FileInfo fileInfo = fileStorageService.of(inputStream).putAttr("sha256sum", sha256Hash).image().upload();
-            return sha256Hash;
+            fileStorageService.of(inputStream).putAttr("sha256sum", sha256Hash).upload();
+            return Boolean.TRUE;
         } catch (IOException e) {
-            return "";
+            return Boolean.FALSE;
         }
     }
 

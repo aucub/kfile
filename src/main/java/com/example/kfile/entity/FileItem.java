@@ -47,7 +47,7 @@ public class FileItem implements Serializable {
 
     private Integer lastModifiedBy;
 
-    private String share;
+    private Integer share;
 
     private String description;
 }

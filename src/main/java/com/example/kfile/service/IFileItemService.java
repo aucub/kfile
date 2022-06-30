@@ -3,6 +3,7 @@ package com.example.kfile.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.kfile.entity.FileDetail;
 import com.example.kfile.entity.FileItem;
+import com.example.kfile.entity.enums.FilePermissionEnum;
 import com.example.kfile.entity.request.FileListRequest;
 import com.example.kfile.entity.request.UploadFileRequest;
 import com.example.kfile.entity.result.FileEntry;
@@ -25,9 +26,9 @@ public interface IFileItemService extends IService<FileItem> {
 
     Boolean newFolder(String directory, String name);
 
-    Boolean newFile(UploadFileRequest uploadFileRequest, FileDetail fileDetail);
+    Boolean newFile(UploadFileRequest uploadFileRequest);
 
-    String getPermission(String id);
+    FilePermissionEnum getPermission(String id);
 
     FileDetail checkUpload(String sha256sum);
 
