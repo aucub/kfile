@@ -19,7 +19,7 @@ public class JasyptTest {
         // 加密
         System.out.println(stringEncryptor.encrypt("Hello"));
         // 解密
-        // System.out.println(stringEncryptor.decrypt("m8Lc8VOKloIYzCnxdTnzf+FjpLQiHY+ilWi+BZNSjYwjaVf+f4A0I+Rf973U38vS"));
+        System.out.println(stringEncryptor.decrypt("m8Lc8VOKloIYzCnxdTnzf+FjpLQiHY+ilWi+BZNSjYwjaVf+f4A0I+Rf973U38vS"));
     }
 
 }

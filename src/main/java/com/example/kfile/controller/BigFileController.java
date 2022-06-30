@@ -1,39 +1,21 @@
 package com.example.kfile.controller;
 
-import com.example.kfile.domain.request.MultipartFileParam;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.StatObjectArgs;
-import io.minio.errors.MinioException;
-import jakarta.servlet.http.HttpServletRequest;
-import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.io.*;
-import java.nio.channels.FileChannel;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 
 @Controller
 @RequestMapping(value = "/bigfile")
 public class BigFileController {
-
+/*
     private final String fileStorePath = "./tmp";
 
-    /**
+    *//**
      * Title: 判断文件是否上传过，是否存在分片，断点续传
      * Description:
      * 文件已存在，下标为-1
      * 文件没有上传过，下标为零
      * 文件上传中断过，返回当前已经上传到的下标
-     */
+     *//*
     @RequestMapping(value = "/check", method = RequestMethod.POST)
     @ResponseBody
     public int checkBigFile(String fileMd5) {
@@ -60,9 +42,9 @@ public class BigFileController {
         }
     }
 
-    /**
+    *//**
      * 上传文件
-     */
+     *//*
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @ResponseBody
     public void filewebUpload(MultipartFileParam param, HttpServletRequest request) {
@@ -90,9 +72,9 @@ public class BigFileController {
         }
     }
 
-    /**
+    *//**
      * 分片上传成功之后，合并文件
-     */
+     *//*
     @RequestMapping(value = "/merge", method = RequestMethod.POST)
     @ResponseBody
     public String filewebMerge(HttpServletRequest request) {
@@ -174,5 +156,5 @@ public class BigFileController {
             }
         }
         return "合并成功";
-    }
+    }*/
 }

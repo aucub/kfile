@@ -2,7 +2,10 @@ package com.example.kfile.controller;
 
 import com.example.kfile.dto.UserDto;
 import com.example.kfile.entity.Result;
+import com.example.kfile.entity.Token;
 import com.example.kfile.entity.User;
+import com.example.kfile.entity.request.UserLoginRequest;
+import com.example.kfile.service.ILoginUserService;
 import com.example.kfile.service.IUserService;
 import com.example.kfile.service.impl.TokenServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,18 +39,22 @@ public class UserController {
 
     private IUserService userService;
 
+    private ILoginUserService loginUserService;
+
     private UserDetailsService userDetailsService;
 
     private PasswordEncoder passwordEncoder;
 
     private TokenServiceImpl tokenService;
 
-
     @Value("${jwt.tokenHeader}")
     private String tokenHeader;
 
     @Value("${jwt.tokenHead}")
     private String tokenHead;
+
+    @Value("${jwt.expireTime}")
+    private int expireTime;
 
     @Autowired
     public void setUserService(IUserService userService) {
@@ -69,18 +76,28 @@ public class UserController {
         this.tokenService = tokenService;
     }
 
+    @Autowired
+    public void setLoginUserService(ILoginUserService loginUserService) {
+        this.loginUserService = loginUserService;
+    }
+
     @PostMapping("/register")
-    public Result register(@Validated @RequestBody UserDto userDto) throws Exception {
-        userService.register(userDto);
-        return Result.success("注册成功");
+    public Result register(@Validated @RequestBody UserDto userDto) {
+        if (!loginUserService.checkMail(userDto.getMail()))
+            return Result.error("邮箱已被注册");
+        if (loginUserService.register(userDto)) {
+            return Result.success("注册成功");
+        }
+        return Result.error("注册失败");
     }
 
     @PostMapping("/login")
-    public Result login(@RequestParam("username") String username, @RequestParam("password") String password) {
-        String token;
+    public Result login(@Validated @RequestBody UserLoginRequest userLoginRequest) {
+        if (!loginUserService.checkMail(userLoginRequest.getUsername())) return Result.error("邮箱不存在");
+        String rawtoken;
         try {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(userLoginRequest.getUsername());
+            if (!passwordEncoder.matches(userLoginRequest.getPassword(), userDetails.getPassword())) {
                 return Result.error("密码不正确");
             }
             if (!userDetails.isEnabled()) {
@@ -88,35 +105,36 @@ public class UserController {
             }
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            token = tokenService.generateToken(userDetails);
+            rawtoken = tokenService.generateToken(userDetails);
         } catch (AuthenticationException e) {
-            log.error("登录异常，detail" + e.getMessage());
             return Result.validateError("用户名或密码不正确");
         }
-        userService.updateLoginDateByUsername(username);
-        Map<String, String> tokenMap = new HashMap<>();
+        loginUserService.updateLoginDateByUsername(userLoginRequest.getUsername());
+        User user = userService.getUserInfo();
+        Token token = new Token(rawtoken, expireTime);
+        Map<String, Object> tokenMap = new HashMap<>();
+        tokenMap.put("user", user);
         tokenMap.put("token", token);
-        tokenMap.put("tokenHead", tokenHead);
         return Result.success(tokenMap);
     }
 
     @PostMapping("/refreshToken")
     public Result refreshToken(@RequestBody HttpServletRequest request) {
-        String token = request.getHeader(tokenHeader);
+        String token = request.getHeader(tokenHeader).substring(this.tokenHead.length());
         String refreshToken = tokenService.refresh(token);
         if (refreshToken == null) {
             return Result.error("token已经过期！");
         }
-        Map<String, String> tokenMap = new HashMap<>();
-        tokenMap.put("token", refreshToken);
-        tokenMap.put("tokenHead", tokenHead);
+        ;
+        Map<String, Object> tokenMap = new HashMap<>();
+        tokenMap.put("token", new Token(refreshToken, expireTime));
         return Result.success(tokenMap);
     }
 
     @PostMapping("/updatePassword")
     public Result updatePassword(@RequestParam String username,
                                  @RequestParam String password) throws Exception {
-        userService.updatePassword(username, password);
+        loginUserService.updatePassword(username, password);
         return Result.success("密码修改成功");
     }
 
@@ -125,6 +143,4 @@ public class UserController {
         User user = userService.getUserInfo();
         return Result.success(user);
     }
-
-
 }

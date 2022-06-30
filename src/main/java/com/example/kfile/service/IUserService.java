@@ -1,7 +1,6 @@
 package com.example.kfile.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.kfile.dto.UserDto;
 import com.example.kfile.entity.User;
 
 /**
@@ -14,11 +13,7 @@ import com.example.kfile.entity.User;
  */
 public interface IUserService extends IService<User> {
 
-    void register(UserDto userDto) throws Exception;
-
-    void updateLoginDateByUsername(String username);
-
-    void updatePassword(String username, String password) throws Exception;
-
     User getUserInfo();
+
+    String getUsername();
 }

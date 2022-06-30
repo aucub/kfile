@@ -15,6 +15,7 @@ import com.example.kfile.service.IUserService;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 import org.dromara.x.file.storage.core.FileInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,19 +37,20 @@ import java.util.Set;
 public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> implements IFileItemService {
 
     FileItemMapper fileItemMapper;
+    FileDetailService fileDetailService;
+    IUserService userService;
 
+    @Autowired
     public void setFileItemMapper(FileItemMapper fileItemMapper) {
         this.fileItemMapper = fileItemMapper;
     }
 
-    FileDetailService fileDetailService;
-
+    @Autowired
     public void setFileDetailService(FileDetailService fileDetailService) {
         this.fileDetailService = fileDetailService;
     }
 
-    IUserService userService;
-
+    @Autowired
     public void setUserService(IUserService userService) {
         this.userService = userService;
     }

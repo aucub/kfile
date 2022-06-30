@@ -1,16 +1,8 @@
 package com.example.kfile.controller;
 
-import com.example.kfile.entity.FileDetail;
-import com.example.kfile.entity.Result;
-import com.example.kfile.entity.request.*;
-import com.example.kfile.service.IFileItemService;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.FileNotFoundException;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 文件操作相关接口, 如新建文件夹, 上传文件, 删除文件, 移动文件等.
@@ -19,7 +11,7 @@ import java.io.FileNotFoundException;
 @RestController
 @RequestMapping("/api/file/operator")
 public class FileOperatorController {
-
+/*
     IFileItemService fileItemService;
 
     public void setFileItemService(IFileItemService fileItemService) {
@@ -81,5 +73,5 @@ public class FileOperatorController {
             return Result.success("复制成功" + fileEntry);
         }
         return AjaxJson.getError("复制失败");
-    }
+    }*/
 }

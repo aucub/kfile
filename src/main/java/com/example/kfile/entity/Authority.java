@@ -23,11 +23,4 @@ public class Authority implements Serializable {
 
     private String authority;
 
-    @Override
-    public String toString() {
-        return "Authority{" +
-                "userId = " + userId +
-                ", authority = " + authority +
-                "}";
-    }
 }

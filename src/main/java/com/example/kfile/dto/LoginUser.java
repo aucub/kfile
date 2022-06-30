@@ -1,10 +1,13 @@
-package com.example.kfile.entity;
+package com.example.kfile.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableName;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.io.Serial;
@@ -20,7 +23,8 @@ import java.util.Date;
  * @since 2023-10-04
  */
 @Data
-public class User implements Serializable {
+@TableName("user")
+public class LoginUser implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -28,44 +32,26 @@ public class User implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    @NotBlank(message = "用户名不能为空")
     @Email
     private String username;
 
     @NotBlank(message = "昵称不能为空")
     private String nickname;
 
+    @NotBlank(message = "密码不能为空")
+    @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+-={}|;':\",.<>?]+$", message = "符号仅支持!@#$%^&*()_+-={}|;':\",.<>?")
+    @Size(min = 8, max = 22, message = "密码长度应在8-22位之间")
+    private String password;
+
     private Boolean enabled;
 
     @TableLogic
     private Integer deleted;
 
+    @NotBlank(message = "用户名不能为空")
     @Email
     private String mail;
-
-    /**
-     * 已用上传流量
-     */
-    private Long usedUpRate;
-
-    /**
-     * 已用下载流量
-     */
-    private Long usedDownRate;
-
-    /**
-     * 可用上传流量
-     */
-    private Long freeUpRate;
-
-    /**
-     * 可用下载流量
-     */
-    private Long freeDownRate;
-
-    /**
-     * 流量重置时间
-     */
-    private Long rateResetLeftMills;
 
     /**
      * 是否是免费用户
@@ -76,11 +62,6 @@ public class User implements Serializable {
      * 账号过期时间
      */
     private Long accountExpireLeftTime;
-
-    /**
-     * 已用存储空间
-     */
-    private Long totalUsedStorage;
 
     /**
      * 最后登录IP

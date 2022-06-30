@@ -23,8 +23,6 @@ public class TokenServiceImpl implements ITokenService {
     private String secret;
     @Value("${jwt.expireTime}")
     private int expireTime;
-    @Value("${jwt.tokenHead}")
-    private String tokenHead;
 
     /**
      * 根据Claims生成JWT的token
@@ -66,27 +64,26 @@ public class TokenServiceImpl implements ITokenService {
     public UserDetails getUserDetails(String token) {
         Claims claims = parseToken(token);
         String username = claims.getSubject();
-        // 获取用户的权限信息，这里假设权限信息已经存储在claims中的authorities字段中
-        Object authoritiesObj = claims.get("authorities");
-        if (authoritiesObj instanceof Collection<?> authoritiesCollection) {
-            boolean isSafe = true;
-            for (Object authority : authoritiesCollection) {
-                if (!(authority instanceof GrantedAuthority)) {
-                    isSafe = false;
-                    break;
-                }
-            }
-            if (isSafe) {
-                @SuppressWarnings("unchecked")
-                Collection<? extends GrantedAuthority> authorities = (Collection<? extends GrantedAuthority>) authoritiesCollection;
-                // 在这里可以使用 authorities 进行安全的操作
-                return User.withUsername(username)
-                        .authorities(authorities)
-                        .build();
-            }
+        Object rawAuthorities = claims.get("authorities");
+
+        if (!(rawAuthorities instanceof Collection<?> authoritiesCollection)) {
+            return null; // Guard clause to handle if rawAuthorities is not a collection.
         }
-        // 处理 authorities 不是集合的情况
-        return null;
+
+        boolean validAuthorities = authoritiesCollection.stream()
+                .allMatch(authority -> authority instanceof GrantedAuthority);
+
+        if (!validAuthorities) {
+            return null; // Guard clause to handle if any authority in the collection is not a GrantedAuthority.
+        }
+
+        // Since we are sure that every object in authoritiesCollection is a GrantedAuthority,
+        // we can safely suppress unchecked cast warning on the next line.
+        @SuppressWarnings("unchecked")
+        Collection<? extends GrantedAuthority> authorities = (Collection<? extends GrantedAuthority>) authoritiesCollection;
+        return User.withUsername(username)
+                .authorities(authorities)
+                .build();
     }
 
     /**
@@ -130,28 +127,24 @@ public class TokenServiceImpl implements ITokenService {
     /**
      * 当原来的token没过期时是可以刷新的
      *
-     * @param oldToken 带tokenHead的token
+     * @param oldToken token
      */
     public String refresh(String oldToken) {
-        if (StringUtils.hasLength(oldToken)) {
-            return null;
-        }
-        String token = oldToken.replace(tokenHead, "");
-        if (StringUtils.hasLength(token)) {
+        if (!StringUtils.hasLength(oldToken)) {
             return null;
         }
         // Token校验不通过
-        Claims claims = parseToken(token);
+        Claims claims = parseToken(oldToken);
         if (Objects.isNull(claims)) {
             return null;
         }
         // 如果token已经过期，不支持刷新
-        if (isTokenExpired(token)) {
+        if (isTokenExpired(oldToken)) {
             return null;
         }
         // 如果token在30分钟之内刚刷新过，返回原token
-        if (tokenRefreshJustBefore(token, 30 * 60)) {
-            return token;
+        if (tokenRefreshJustBefore(oldToken, 30 * 60)) {
+            return oldToken;
         } else {
             claims.put("iat", new Date());
             return generateToken(claims);
