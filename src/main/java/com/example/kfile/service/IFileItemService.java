@@ -3,6 +3,7 @@ package com.example.kfile.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.kfile.entity.FileDetail;
 import com.example.kfile.entity.FileItem;
+import com.example.kfile.entity.request.FileListRequest;
 import com.example.kfile.entity.request.UploadFileRequest;
 import com.example.kfile.entity.result.FileEntry;
 
@@ -18,7 +19,7 @@ import java.util.List;
  * @since 2023-11-12
  */
 public interface IFileItemService extends IService<FileItem> {
-    List<FileEntry> fileList(String fileItemId);
+    List<FileEntry> list(FileListRequest fileListRequest);
 
     FileEntry getFileEntry(String fileItemId) throws FileNotFoundException;
 
@@ -28,11 +29,11 @@ public interface IFileItemService extends IService<FileItem> {
 
     FileDetail checkUpload(UploadFileRequest uploadFileRequest);
 
-    String deleteFile(String fileItemId) throws FileNotFoundException;
+    Boolean deleteFile(String fileItemId);
 
-    FileEntry copyFile(String fileItemId, String targetDirectory) throws FileNotFoundException;
+    Boolean copyFile(String fileItemId, String targetDirectory);
 
-    FileEntry moveFile(String fileItemId, String targetDirectory);
+    Boolean moveFile(String fileItemId, String targetDirectory);
 
-    Boolean renameFile(String fileItemId, String newName) throws FileNotFoundException;
+    Boolean renameFile(String fileItemId, String newName);
 }

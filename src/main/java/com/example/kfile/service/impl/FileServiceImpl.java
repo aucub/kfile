@@ -80,7 +80,7 @@ public class FileServiceImpl implements IFileService {
     public FileItem uploadFile(UploadFileRequest uploadFileRequest, MultipartFile file) {
         FileInfo fileInfo = fileStorageService.of(file).setName(uploadFileRequest.getSha256sum()).upload();
         FileItem fileItem = new FileItem();
-        fileItem.setCreatedBy(userService.getUserInfo().getCreatedBy());
+        fileItem.setCreatedBy(userService.getUserInfo().getId());
         fileItemService.save(fileItem);
         return fileItem;
     }

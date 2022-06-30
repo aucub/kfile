@@ -14,6 +14,5 @@ public class FileEntry extends FileItem {
 
     private Long size;
 
-    //"SHA256"
     private String sha256sum;
 }

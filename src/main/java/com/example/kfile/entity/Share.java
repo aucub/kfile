@@ -22,7 +22,7 @@ public class Share implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 链接, example = "voldd3"
+     * 链接
      */
     @TableId("url")
     private String url;

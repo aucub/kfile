@@ -6,7 +6,7 @@ public interface ILoginUserService {
 
     void updateLoginDateByUsername(String username);
 
-    Boolean register(UserDto userDto);
+    Integer register(UserDto userDto);
 
     Boolean checkMail(String mail);
 

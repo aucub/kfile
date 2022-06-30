@@ -1,11 +1,16 @@
 package com.example.kfile.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.poi.excel.cell.CellSetter;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.kfile.entity.FileDetail;
 import com.example.kfile.entity.FileItem;
 import com.example.kfile.entity.enums.FileTypeEnum;
+import com.example.kfile.entity.enums.OrderByTypeEnum;
+import com.example.kfile.entity.enums.OrderDirectionTypeEnum;
+import com.example.kfile.entity.request.FileListRequest;
 import com.example.kfile.entity.request.UploadFileRequest;
 import com.example.kfile.entity.result.FileEntry;
 import com.example.kfile.mapper.FileItemMapper;
@@ -56,13 +61,30 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
     }
 
     @Override
-    public List<FileEntry> fileList(String fileItemId) {
+    public List<FileEntry> list(FileListRequest fileListRequest) {
+        QueryWrapper<FileItem> queryWrapper=new QueryWrapper<FileItem>();
         // 检查文件项ID是否为空
-        if (fileItemId == null || fileItemId.isEmpty()) {
-            throw new IllegalArgumentException("文件项ID不能为空");
+        if (fileListRequest.getDirectory() == "") {
+            queryWrapper=queryWrapper.eq("created_by", userService.getUserInfo().getId());
+        }else{
+            queryWrapper=queryWrapper.eq("directory", fileListRequest.getDirectory());
+        }
+        if(fileListRequest.getOrderBy()== OrderByTypeEnum.TIME){
+            if(fileListRequest.getOrderDirection()== OrderDirectionTypeEnum.DESC){
+                queryWrapper=queryWrapper.orderByDesc("last_modified_date");
+            }else {
+                queryWrapper=queryWrapper.orderByAsc("last_modified_date");
+            }
+        }
+        if(fileListRequest.getOrderBy()== OrderByTypeEnum.NAME){
+            if(fileListRequest.getOrderDirection()== OrderDirectionTypeEnum.DESC){
+                queryWrapper=queryWrapper.orderByDesc("name");
+            }else {
+                queryWrapper=queryWrapper.orderByAsc("name");
+            }
         }
         // 查询文件项列表
-        List<FileItem> fileItems = fileItemMapper.findFileItemByDirectory(fileItemId);
+        List<FileItem> fileItems = fileItemMapper.selectList(queryWrapper);
         // 创建文件列表
         List<FileEntry> fileEntries = new ArrayList<>();
         // 遍历文件项列表
@@ -71,10 +93,8 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
             if (fileItem.getType().getValue().equals(FileTypeEnum.FILE.getValue())) {
                 // 根据文件信息ID查询文件详情
                 FileInfo fileInfo = fileDetailService.getByUrl(fileItem.getUrl());
-
                 fileEntry.setSize(fileInfo.getSize());
                 fileEntry.setSha256sum(fileInfo.getAttr().getStr("sha256sum"));
-
             }
             fileEntries.add(fileEntry);
         }
@@ -93,7 +113,6 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
         FileEntry fileEntry = BeanUtil.copyProperties(fileItem, FileEntry.class);
         // 根据文件项中的文件信息ID查找文件详情
         FileInfo fileInfo = fileDetailService.getByUrl(fileItem.getUrl());
-
         fileEntry.setSize(fileInfo.getSize());
         fileEntry.setSha256sum(fileInfo.getAttr().getStr("sha256sum"));
         return fileEntry;
@@ -101,7 +120,9 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
 
     @Override
     public Boolean newFolder(String directory, String name) {
-        for (FileEntry fileEntry : fileList(directory)) {
+        FileListRequest fileListRequest=new FileListRequest();
+        fileListRequest.setDirectory(directory);
+        for (FileEntry fileEntry : list(fileListRequest)) {
             if (fileEntry.getName().equals(name)) {
                 return false;
             }
@@ -109,7 +130,6 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
         FileItem fileItem = new FileItem();
         fileItem.setName(name);
         fileItem.setDirectory(directory);
-        fileItem.setCreatedDate(new Date());
         fileItem.setType(FileTypeEnum.FOLDER);
         fileItem.setCreatedBy(userService.getUserInfo().getId());
         return save(fileItem);
@@ -123,8 +143,6 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
         fileItem.setType(FileTypeEnum.FILE);
         fileItem.setDirectory(uploadFileRequest.getDirectory());
         fileItem.setCreatedBy(userService.getUserInfo().getId());
-        fileItem.setCreatedDate(new Date());
-        fileItem.setLastModifiedDate(new Date());
         return save(fileItem);
     }
 
@@ -137,64 +155,39 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
     @Override
     @Transactional
     // 删除文件
-    public String deleteFile(String fileItemId) throws FileNotFoundException {
-        // 根据文件ID构建可变图
+    public Boolean deleteFile(String fileItemId){
         MutableGraph<String> mutableGraph = buildMutableGraphByFileId(fileItemId);
-        // 获取图中节点的总数
-        int totalCount = mutableGraph.nodes().size();
-        // 删除节点及其子节点，并返回是否删除成功
         if (Boolean.TRUE.equals(deleteNodeAndDescendants(mutableGraph, fileItemId))) {
-            // 如果删除成功，返回删除成功的消息
-            return "删除成功：" + totalCount + "个";
-        } else {
-            // 如果删除失败，计算成功删除的节点数量和失败删除的节点数量
-            int successCount = mutableGraph.nodes().size();
-            int failureCount = totalCount - successCount;
-            // 返回删除失败和成功的消息
-            return "删除失败：" + failureCount + "个，删除成功：" + successCount + "个";
+            return true;
+        } else{
+            return false;
         }
     }
 
     @Override
     @Transactional
     // 复制文件
-    public FileEntry copyFile(String fileItemId, String targetDirectory) throws FileNotFoundException {
+    public Boolean copyFile(String fileItemId, String targetDirectory) {
         // 根据文件ID构建可变图
         MutableGraph<String> mutableGraph = buildMutableGraphByFileId(fileItemId);
         // 复制节点及其子节点到目标目录
-        String newFileItemId = copyNodeAndDescendants(mutableGraph, fileItemId, targetDirectory);
-        // 根据新的文件ID获取新的文件项
-        FileItem newFileItem = getById(newFileItemId);
-        FileInfo fileInfo = fileDetailService.getByUrl(newFileItem.getUrl());
-        FileEntry fileEntry = BeanUtil.copyProperties(newFileItem, FileEntry.class);
-        fileEntry.setSize(fileInfo.getSize());
-        fileEntry.setSha256sum(fileInfo.getAttr().getStr("sha256sum"));
-        // 返回新的文件项
-        return fileEntry;
+        return !copyNodeAndDescendants(mutableGraph, fileItemId, targetDirectory).isEmpty();
     }
 
     @Override
-    public FileEntry moveFile(String fileItemId, String targetDirectory) {
+    public Boolean moveFile(String fileItemId, String targetDirectory) {
         // 验证输入参数是否为空或不符合要求的格式
         if (fileItemId == null || fileItemId.isEmpty() || targetDirectory == null || targetDirectory.isEmpty()) {
-            throw new IllegalArgumentException("无效的参数!");
+            return false;
         }
         // 检查文件是否存在
         FileItem fileItem = getById(fileItemId);
-        // 检查目标目录是否与当前目录相同
-        if (fileItem.getDirectory().equals(targetDirectory)) {
-            throw new IllegalArgumentException("不能移动到自己!");
+        if (fileItem==null||fileItem.getDirectory().equals(targetDirectory)||fileItem.getDirectory().isEmpty()) {
+            return false;
         }
         // 更新文件目录
         fileItem.setDirectory(targetDirectory);
-        save(fileItem);
-
-        // 返回新的文件项
-        FileEntry fileEntry = BeanUtil.copyProperties(fileItem, FileEntry.class);
-        FileInfo fileInfo = fileDetailService.getByUrl(fileItem.getUrl());
-        fileEntry.setSize(fileInfo.getSize());
-        fileEntry.setSha256sum(fileInfo.getAttr().getStr("sha256sum"));
-        return fileEntry;
+        return updateById(fileItem);
     }
 
     @Override
@@ -205,15 +198,17 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
      * @return 重命名后的文件项
      * @throws FileNotFoundException 如果找不到文件信息
      */
-    public Boolean renameFile(String fileItemId, String newName) throws FileNotFoundException {
+    public Boolean renameFile(String fileItemId, String newName) {
         FileItem fileItem = getById(fileItemId);
+        FileListRequest fileListRequest=new FileListRequest();
+        fileListRequest.setDirectory(fileItem.getDirectory());
         // 检查文件项是否存在
-        for (FileEntry fileEntry : fileList(fileItem.getDirectory())) {
+        for (FileEntry fileEntry : list(fileListRequest)) {
             if (fileEntry.getName().equals(newName)) {
                 return false;
             }
         }
-        return save(fileItem);
+        return updateById(fileItem);
     }
 
     // 获取文件的所有者
@@ -222,7 +217,7 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
         return fileItem.getCreatedBy();
     }
 
-    public MutableGraph<String> buildMutableGraphByFileId(String fileItemId) throws FileNotFoundException {
+    public MutableGraph<String> buildMutableGraphByFileId(String fileItemId) {
         MutableGraph<String> mutableGraph = GraphBuilder.directed().build();
         FileItem fileItem = getById(fileItemId);
         if (fileItem.getType().equals(FileTypeEnum.FOLDER)) {
@@ -232,7 +227,8 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
     }
 
     public void addChildren(MutableGraph<String> mutableGraph, String fileItemId) {
-        List<FileItem> fileItems = fileItemMapper.findFileItemByDirectory(fileItemId);
+        QueryWrapper<FileItem> queryWrapper = new QueryWrapper<FileItem>().eq("directory", fileItemId);
+        List<FileItem> fileItems = fileItemMapper.selectList(queryWrapper);
         for (FileItem fileItem : fileItems) {
             mutableGraph.addNode(fileItem.getId());
             if (fileItem.getType().getValue().equals(FileTypeEnum.FOLDER.getValue())) {
@@ -244,19 +240,16 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
 
     @Transactional
     public Boolean deleteNodeAndDescendants(MutableGraph<String> mutableGraph, String nodeId) {
-        boolean canDelete = false;
+        boolean canDelete = true;
         Set<String> successors = mutableGraph.successors(nodeId);
-        // 后序遍历节点的子节点
         for (String successor : successors) {
-            if (Boolean.TRUE.equals(deleteNodeAndDescendants(mutableGraph, successor))) {
-                canDelete = true;
+            if(!Boolean.TRUE.equals(deleteNodeAndDescendants(mutableGraph, successor))){
+                canDelete = false;
             }
         }
         if (canDelete && getById(nodeId) != null) {
             fileItemMapper.deleteById(nodeId);
-            // 删除节点及其相关边
             mutableGraph.removeNode(nodeId);
-
         }
         return canDelete;
     }
@@ -267,10 +260,8 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
         String newNodeValue = "null";
         FileItem fileItem = getById(nodeId);
         fileItem.setCreatedBy(userService.getUserInfo().getId());
-        fileItem.setCreatedDate(new Date());
         fileItem.setDirectory(directory);
-        fileItem.setLastModifiedDate(new Date());
-        save(fileItem);
+        fileItemMapper.insert(fileItem);
         newNodeValue = fileItem.getId();
         modifyNodeValue(mutableGraph, nodeId, newNodeValue);
         canCopy = true;
@@ -285,18 +276,14 @@ public class FileItemServiceImpl extends ServiceImpl<FileItemMapper, FileItem> i
     }
 
     public void modifyNodeValue(MutableGraph<String> mutableGraph, String nodeId, String newNodeValue) {
-        // 创建新的节点
         mutableGraph.addNode(newNodeValue);
-        // 移除原有节点与其后继节点之间的边
         Set<String> successors = mutableGraph.successors(nodeId);
         for (String successor : successors) {
             mutableGraph.removeEdge(nodeId, successor);
         }
-        // 添加新节点与后继节点之间的边
         for (String successor : successors) {
             mutableGraph.putEdge(newNodeValue, successor);
         }
-        // 删除原有节点
         mutableGraph.removeNode(nodeId);
     }
 

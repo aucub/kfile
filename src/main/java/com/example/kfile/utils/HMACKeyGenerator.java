@@ -25,7 +25,7 @@ public class HMACKeyGenerator {
 
     private static SecretKey generateSecretKey(String algorithm) throws NoSuchAlgorithmException {
         KeyGenerator keyGen = KeyGenerator.getInstance(algorithm);
-        keyGen.init(512); // 512 bits for HMAC512
+        keyGen.init(512);
         return keyGen.generateKey();
     }
 

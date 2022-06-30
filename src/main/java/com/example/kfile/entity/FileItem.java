@@ -1,6 +1,7 @@
 package com.example.kfile.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.example.kfile.entity.enums.FileTypeEnum;
 import lombok.Data;

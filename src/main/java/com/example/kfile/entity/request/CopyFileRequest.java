@@ -9,13 +9,10 @@ import lombok.Data;
 @Data
 public class CopyFileRequest {
 
-    //"父路径ID"
-    private String source;
+    //文件ID
+    private String id;
 
-    //"文件ID"
-    private String fileItemId;
-
-    //"目标路径"
+    //目标路径
     private String target;
 
 }

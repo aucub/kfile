@@ -10,22 +10,12 @@ import lombok.Data;
  */
 @Data
 public class FileListRequest {
-    //请求路径
-    private String directory;
+    private String directory="";
 
     @Valid
-    private OrderByTypeEnum orderBy;
+    private OrderByTypeEnum orderBy= OrderByTypeEnum.NAME;
 
     @Valid
-    private OrderDirectionTypeEnum orderDirection;
-
-    public void handleDefaultValue() {
-        if (orderBy.getValue().isEmpty()) {
-            orderBy = OrderByTypeEnum.NAME;
-        }
-        if (orderDirection.getValue().isEmpty()) {
-            orderDirection = OrderDirectionTypeEnum.ASC;
-        }
-    }
+    private OrderDirectionTypeEnum orderDirection= OrderDirectionTypeEnum.ASC;
 
 }

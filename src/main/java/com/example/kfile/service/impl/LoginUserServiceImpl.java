@@ -27,7 +27,7 @@ public class LoginUserServiceImpl implements ILoginUserService {
         loginUserMapper.updateLoginDateByUsername(username);
     }
 
-    public Boolean register(UserDto userDto) {
+    public Integer register(UserDto userDto) {
         LoginUser loginUser = new LoginUser();
         BeanUtils.copyProperties(userDto, loginUser);
         loginUser.setEnabled(true);
@@ -39,13 +39,13 @@ public class LoginUserServiceImpl implements ILoginUserService {
         selectUser.setUsername(loginUser.getUsername());
         selectUser = loginUserMapper.selectOne(new QueryWrapper<>(selectUser));
         if (Objects.isNull(selectUser)) {
-            return false;
+            return null;
         }
         Authority authority = new Authority();
         authority.setUserId(selectUser.getId());
         authority.setAuthority("ROLE_USER");
         authorityMapper.insert(authority);
-        return true;
+        return selectUser.getId();
     }
 
     public Boolean checkMail(String mail) {
@@ -63,7 +63,8 @@ public class LoginUserServiceImpl implements ILoginUserService {
         selectUser.setUsername(username);
         LoginUser loginUser = loginUserMapper.selectOne(new QueryWrapper<>(selectUser));
         if (Objects.nonNull(loginUser)) {
+        loginUser.setPassword(password);
+        loginUserMapper.updateById(loginUser);
         }
-
     }
 }

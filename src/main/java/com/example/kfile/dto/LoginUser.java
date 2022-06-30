@@ -54,16 +54,6 @@ public class LoginUser implements Serializable {
     private String mail;
 
     /**
-     * 是否是免费用户
-     */
-    private Boolean freeUser;
-
-    /**
-     * 账号过期时间
-     */
-    private Long accountExpireLeftTime;
-
-    /**
      * 最后登录IP
      */
     private String loginIp;
@@ -73,11 +63,7 @@ public class LoginUser implements Serializable {
      */
     private Date loginDate;
 
-    private Integer createdBy;
-
     private Date createdDate;
-
-    private Integer lastModifiedBy;
 
     private Date lastModifiedDate;
 }

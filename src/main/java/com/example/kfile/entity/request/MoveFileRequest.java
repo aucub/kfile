@@ -7,12 +7,8 @@ import lombok.Data;
  */
 @Data
 public class MoveFileRequest {
-
-    //父路径ID
-    private String source;
-
     //文件ID
-    private String fileItemId;
+    private String id;
 
     //目标父路径
     private String target;

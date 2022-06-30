@@ -19,8 +19,4 @@ import java.util.List;
 @Mapper
 public interface FileItemMapper extends BaseMapper<FileItem> {
 
-    List<FileItem> findFileItemByDirectory(@Param("directory") String directory);
-
-    FileEntry findFileEntryByFileItemId(@Param("fileItemId") String fileItemId);
-
 }

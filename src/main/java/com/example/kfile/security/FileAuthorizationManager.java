@@ -16,11 +16,11 @@ public class FileAuthorizationManager implements AuthorizationManager<RequestAut
 
     @Override
     public AuthorizationDecision check(Supplier<Authentication> authentication, RequestAuthorizationContext requestAuthorizationContext) {
-        HandlerMethod handlerMethod = (HandlerMethod) requestAuthorizationContext.getRequest().getAttribute(HandlerMapping.BEST_MATCHING_HANDLER_ATTRIBUTE);
+        /*HandlerMethod handlerMethod = (HandlerMethod) requestAuthorizationContext.getRequest().getAttribute(HandlerMapping.BEST_MATCHING_HANDLER_ATTRIBUTE);
         PreAuthorize preAuthorizeAnnotation = handlerMethod.getMethodAnnotation(PreAuthorize.class);
         if (preAuthorizeAnnotation != null) {
             String expression = preAuthorizeAnnotation.value();
-        }
+        }*/
         return new AuthorizationDecision(true);
     }
 }

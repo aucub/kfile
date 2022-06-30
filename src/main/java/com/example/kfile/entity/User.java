@@ -34,48 +34,11 @@ public class User implements Serializable {
     @NotBlank(message = "昵称不能为空")
     private String nickname;
 
-    private Boolean enabled;
-
     @TableLogic
-    private Integer deleted;
+    private Integer enabled;
 
     @Email
     private String mail;
-
-    /**
-     * 已用上传流量
-     */
-    private Long usedUpRate;
-
-    /**
-     * 已用下载流量
-     */
-    private Long usedDownRate;
-
-    /**
-     * 可用上传流量
-     */
-    private Long freeUpRate;
-
-    /**
-     * 可用下载流量
-     */
-    private Long freeDownRate;
-
-    /**
-     * 流量重置时间
-     */
-    private Long rateResetLeftMills;
-
-    /**
-     * 是否是免费用户
-     */
-    private Boolean freeUser;
-
-    /**
-     * 账号过期时间
-     */
-    private Long accountExpireLeftTime;
 
     /**
      * 已用存储空间
@@ -92,11 +55,7 @@ public class User implements Serializable {
      */
     private Date loginDate;
 
-    private Integer createdBy;
-
     private Date createdDate;
-
-    private Integer lastModifiedBy;
 
     private Date lastModifiedDate;
 }

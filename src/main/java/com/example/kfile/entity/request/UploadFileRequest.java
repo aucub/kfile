@@ -8,22 +8,20 @@ import lombok.Data;
 @Data
 public class UploadFileRequest {
 
-    //文件名", example = "a
+    //文件名
     private String name;
 
-    //扩展名", example = "mp4
+    //扩展名
     private String ext;
 
-    //MIME类型", example = "video/mp4
+    //MIME类型
     private String contentType;
 
-    //大小", example = "1024
+    //大小
     private Long size;
 
     //上传路径
     private String directory;
-
-    private String fileItemId;
 
     private String sha256sum;
 

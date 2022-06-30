@@ -12,11 +12,6 @@ public enum OrderByTypeEnum {
      * 文件名
      */
     NAME("name"),
-
-    /**
-     * 大小
-     */
-    SIZE("size"),
     /**
      * 时间
      */
