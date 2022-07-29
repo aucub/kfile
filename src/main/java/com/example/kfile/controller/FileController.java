@@ -1,106 +1,1 @@
-package com.example.kfile.controller;
-
-import io.minio.*;
-import io.minio.errors.*;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
-
-@Controller
-public class FileController {
-
-    @GetMapping("/")
-    public String uploadPage() {
-        return "uploader";
-    }
-
-    MinioClient minioClient =
-            MinioClient.builder()
-                    .endpoint("http://127.0.0.1:9001")
-                    .credentials("sDRDIb2VaWKBRIn817J3", "AJMnqvSgWXNlCGwFp5lmYS3TqE76tDQv9itW1BFG")
-                    .build();
-
-    public String download(String filemd5, int expires, String customFilename) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-        Map<String, String> reqParams = new HashMap<>();
-        reqParams.put("response-content-disposition", "attachment; filename=\"" + customFilename + "\"");
-        return minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder().bucket("file").object(filemd5).expiry(expires).extraQueryParams(reqParams).build());
-    }
-
-    public String delete(String filemd5) {
-        try {
-            minioClient.removeObject(RemoveObjectArgs.builder().bucket("file").object(filemd5).build());
-        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
-                 InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException |
-                 XmlParserException e) {
-            throw new RuntimeException(e);
-        }
-        return "删除成功";
-    }
-
-    @GetMapping("/download/filemd5")
-    public ResponseEntity<InputStreamResource> downloadFile(String filemd5, String filename) {
-        try {
-            InputStream stream = minioClient.getObject(GetObjectArgs.builder().bucket("file").object(filemd5).build());
-            InputStreamResource resource = new InputStreamResource(stream);
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.add("Content-Disposition", "attachment;filename=" + filename);
-            return ResponseEntity.ok()
-                    .headers(httpHeaders)
-                    .contentLength(resource.contentLength())
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(resource);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @PostMapping("/upload")
-    @ResponseBody
-    public String upload(@RequestPart("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            return "上传失败，请选择文件";
-        }
-        try {
-            MinioClient minioClient =
-                    MinioClient.builder()
-                            .endpoint("http://127.0.0.1:9001")
-                            .credentials("sDRDIb2VaWKBRIn817J3", "AJMnqvSgWXNlCGwFp5lmYS3TqE76tDQv9itW1BFG")
-                            .build();
-            byte[] data = file.getBytes();
-            minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket("file")                 // 存储桶名称
-                            .object(file.getOriginalFilename())                 // 对象名称
-                            .stream(
-                                    new ByteArrayInputStream(data),  // 文件内容字节流
-                                    data.length,                      // 文件大小
-                                    -1                                // 选项，告诉 SDK 读取整个流
-                            )
-                            .build()
-            );
-            return "上传成功";
-        } catch (IOException | ErrorResponseException | InsufficientDataException | InternalException |
-                 InvalidKeyException | InvalidResponseException | NoSuchAlgorithmException | ServerException |
-                 XmlParserException e) {
-            e.printStackTrace();
-        }
-        return "上传失败！";
-    }
-
-}
+package com.example.kfile.controller;import com.example.kfile.chain.FileChain;import com.example.kfile.chain.FileContext;import com.example.kfile.domain.FileInfo;import com.example.kfile.domain.FileInfoList;import com.example.kfile.domain.StorageSource;import com.example.kfile.domain.request.FileListRequest;import com.example.kfile.repository.FileInfoRepository;import com.example.kfile.repository.StorageSourceRepository;import com.example.kfile.util.AjaxJson;import io.swagger.annotations.Api;import io.swagger.annotations.ApiOperation;import jakarta.annotation.Resource;import jakarta.validation.Valid;import lombok.extern.slf4j.Slf4j;import org.springframework.beans.factory.annotation.Autowired;import org.springframework.web.bind.annotation.*;import java.util.List;/** * 文件列表相关接口, 如展示存储源列表, 展示文件列表, 搜索文件列表等. */@Api(tags = "文件列表模块")@Slf4j@RequestMapping("/api/storage")@RestControllerpublic class FileController {    private FileInfoRepository fileInfoRepository;    private StorageSourceRepository storageSourceRepository;    @Resource    private FileChain fileChain;    @Autowired    public void setFileInfoRepository(FileInfoRepository fileInfoRepository) {        this.fileInfoRepository = fileInfoRepository;    }    @Autowired    public void setStorageSourceRepository(StorageSourceRepository storageSourceRepository) {        this.storageSourceRepository = storageSourceRepository;    }    @ApiOperation(value = "获取存储源列表")    @GetMapping("/list")    public AjaxJson<List<StorageSource>> storageList() {        return AjaxJson.getSuccessData(storageSourceRepository.findByEnableStorageTrue());    }    @ApiOperation(value = "获取文件列表")    @PostMapping("/files")    public AjaxJson<FileInfoList> list(@Valid @RequestBody FileListRequest fileListRequest) throws Exception {        // 处理请求参数默认值        fileListRequest.handleDefaultValue();        // 获取文件列表        List<FileInfo> fileInfos = fileInfoRepository.findFileInfosByPath(fileListRequest.getPath());        // 执行责任链        FileContext fileContext = FileContext.builder()                .fileListRequest(fileListRequest)                .fileInfos(fileInfos).build();        fileChain.execute(fileContext);        return AjaxJson.getSuccessData(new FileInfoList(fileContext.getFileInfos()));    }    @ApiOperation(value = "获取单个文件信息")    @PostMapping("/file/item")    public AjaxJson<?> fileItem(@Valid @RequestBody String fileId) {        FileInfo fileInfo;        try {            fileInfo = fileInfoRepository.findById(fileId).get();        } catch (Exception e) {            return AjaxJson.getError("获取文件信息失败: " + e.getMessage());        }        return AjaxJson.getSuccessData(fileInfo);    }}
