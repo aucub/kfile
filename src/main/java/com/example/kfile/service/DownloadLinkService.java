@@ -1,8 +1,6 @@
 package com.example.kfile.service;
 
 import cn.hutool.core.util.StrUtil;
-import com.example.kfile.annotation.LinkRateLimiter;
-import com.example.kfile.annotation.RefererCheck;
 import com.example.kfile.exception.InvalidDirectLinkException;
 import com.example.kfile.exception.StorageSourceFileOperatorException;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +20,6 @@ public class DownloadLinkService {
         this.storageService = storageService;
     }
 
-    @RefererCheck
-    @LinkRateLimiter
     public String getDownloadLink(String platform, String filePath, long expires) throws IOException, TextParseException {
         // 检查系统是否允许直链
         if (false) {

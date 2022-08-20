@@ -43,7 +43,7 @@ public class StorageSourceService {
 
 
     /**
-     * 获取所有启用的存储源列表，按照存储源的排序号排序
+     * 获取所有启用的存储源列表
      *
      * @return 已启用的存储源列表
      */
@@ -55,7 +55,7 @@ public class StorageSourceService {
     /**
      * 获取指定存储源设置
      *
-     * @param platform 存储源 ID
+     * @param platform 存储源
      * @return 存储源设置
      */
     @Cacheable(key = "#platform", unless = "#result == null")
@@ -67,9 +67,9 @@ public class StorageSourceService {
 
 
     /**
-     * 删除指定存储源设置, 会级联删除其参数设置
+     * 删除指定存储源
      *
-     * @param platform 存储源 ID
+     * @param platform 存储源
      */
     @Transactional(rollbackFor = Exception.class)
     @Caching(evict = {

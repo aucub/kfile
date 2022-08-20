@@ -6,11 +6,13 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
- * 分享链接
+ * 文件分享
  */
 @Data
 @AllArgsConstructor
@@ -18,6 +20,7 @@ import java.util.Date;
 @Document("ShareLink")
 public class ShareLink implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
 
@@ -28,6 +31,17 @@ public class ShareLink implements Serializable {
 
     //文件ID
     private String fileId;
+
+    //访问范围, example = "public","aclist","users"
+    private String acl;
+
+    private List<String> users;
+    //权限,4=access,2=download,1=upload
+    private List<Integer> aclist;
+
+    private String password;
+
+    private int allow;
 
 
     //创建时间, example = "2021-11-22 10:05"
