@@ -37,7 +37,7 @@ public class ShareLinkService {
     /**
      * 生成分享
      */
-    public ShareLink generatorShareLink(String fileId, Long expireTime) {
+    public ShareLink generatorShareLink(String fileItemId, Long expireTime) {
         boolean validate = checkExpireDateIsValidate(expireTime);
         if (!validate) {
             throw new IllegalArgumentException("过期时间不合法");
@@ -54,7 +54,7 @@ public class ShareLinkService {
         shareLink = new ShareLink();
         shareLink.setUrl(randomKey);
         shareLink.setCreateDate(new Date());
-        shareLink.setFileId(fileId);
+        shareLink.setFileItemId(fileItemId);
 
         if (expireTime == -1) {
             shareLink.setExpireDate(DateUtil.parseDate("9999-12-31"));

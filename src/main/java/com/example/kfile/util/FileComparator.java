@@ -1,8 +1,8 @@
 package com.example.kfile.util;
 
 import cn.hutool.core.comparator.CompareUtil;
-import com.example.kfile.domain.FileInfo;
 import com.example.kfile.domain.enums.FileTypeEnum;
+import com.example.kfile.domain.result.FileEntry;
 
 import java.util.Comparator;
 
@@ -13,7 +13,7 @@ import java.util.Comparator;
  * - 默认排序为升序
  * - 按名称排序不区分大小写
  */
-public class FileComparator implements Comparator<FileInfo> {
+public class FileComparator implements Comparator<FileEntry> {
 
     private String sortBy;
 
@@ -33,7 +33,7 @@ public class FileComparator implements Comparator<FileInfo> {
      * @return 比较结果
      */
     @Override
-    public int compare(FileInfo o1, FileInfo o2) {
+    public int compare(FileEntry o1, FileEntry o2) {
         if (sortBy == null) {
             sortBy = "name";
         }

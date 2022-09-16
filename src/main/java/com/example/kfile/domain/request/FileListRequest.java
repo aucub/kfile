@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class FileListRequest {
     //请求路径
-    private String path;
+    private String directory;
 
     @StringListValue(message = "排序字段参数异常，只能是 name、size、time", vals = {"name", "size", "time"})
     private OrderByTypeEnum orderBy;

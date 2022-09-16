@@ -9,5 +9,5 @@ public class NewFolderRequest {
     private String name;
 
     @ApiModelProperty(value = "所在路径ID")
-    private String path;
+    private String directory;
 }

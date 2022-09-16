@@ -9,11 +9,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document
+@Document("SandBox")
 public class SandBox {
 
     @Id
-    private String fileId;
+    private String fileItemId;
     private String name;
     private String owner;
     private String share;
