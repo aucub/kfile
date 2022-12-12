@@ -1,4 +1,4 @@
-package com.example.kfile;
+package com.example.kfile.domain.request;
 
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;

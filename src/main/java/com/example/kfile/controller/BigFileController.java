@@ -1,6 +1,6 @@
 package com.example.kfile.controller;
 
-import com.example.kfile.MultipartFileParam;
+import com.example.kfile.domain.request.MultipartFileParam;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.StatObjectArgs;
