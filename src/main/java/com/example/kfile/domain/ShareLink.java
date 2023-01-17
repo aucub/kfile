@@ -23,7 +23,6 @@ public class ShareLink implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-
     //链接, example = "voldd3"
     @Id
     private String url;

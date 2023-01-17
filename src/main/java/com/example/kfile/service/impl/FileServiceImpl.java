@@ -3,14 +3,13 @@ package com.example.kfile.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import com.example.kfile.domain.FileDetail;
 import com.example.kfile.domain.FileItem;
-import com.example.kfile.domain.ShareLink;
+import com.example.kfile.domain.SandBox;
 import com.example.kfile.domain.enums.FileTypeEnum;
 import com.example.kfile.domain.result.FileEntry;
 import com.example.kfile.exception.ServiceException;
 import com.example.kfile.repository.FileDetailRepository;
 import com.example.kfile.repository.FileItemRepository;
 import com.example.kfile.repository.SandBoxRepository;
-import com.example.kfile.repository.ShareLinkRepository;
 import com.example.kfile.service.FileService;
 import com.example.kfile.util.CodeMsg;
 import com.example.kfile.util.FileUtil;
@@ -23,17 +22,22 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+@SuppressWarnings("UnstableApiUsage")
 @Service
 public class FileServiceImpl implements FileService {
 
     FileItemRepository fileItemRepository;
     FileDetailRepository fileDetailRepository;
     SandBoxRepository sandBoxRepository;
-    ShareLinkRepository shareLinkRepository;
 
     @Autowired
-    public void setFileInfoRepository(FileDetailRepository fileInfoRepository) {
-        this.fileDetailRepository = fileInfoRepository;
+    public void setFileItemRepository(FileItemRepository fileItemRepository) {
+        this.fileItemRepository = fileItemRepository;
+    }
+
+    @Autowired
+    public void setFileDetailRepository(FileDetailRepository fileDetailRepository) {
+        this.fileDetailRepository = fileDetailRepository;
     }
 
     @Autowired
@@ -41,30 +45,47 @@ public class FileServiceImpl implements FileService {
         this.sandBoxRepository = sandBoxRepository;
     }
 
-    @Autowired
-    public void setShareLinkRepository(ShareLinkRepository shareLinkRepository) {
-        this.shareLinkRepository = shareLinkRepository;
-    }
-
     @Override
     public List<FileEntry> fileList(String fileItemId) throws Exception {
-        List<FileItem> fileItems = fileItemRepository.findFileItemByDirectory(fileItemId);
-        List<FileEntry> fileEntries = new ArrayList<>();
-        for (FileItem fileItem : fileItems) {
-            FileDetail fileDetail = fileDetailRepository.findById(fileItem.getFileInfoId()).orElseThrow(() -> new FileNotFoundException("找不到文件信息：" + fileItem.getFileInfoId()));
-            fileEntries.add(FileUtil.getFileEntry(fileItem, fileDetail));
+        // 检查文件项ID是否为空
+        if (fileItemId == null || fileItemId.isEmpty()) {
+            throw new IllegalArgumentException("文件项ID不能为空");
         }
+        // 查询文件项列表
+        List<FileItem> fileItems = fileItemRepository.findFileItemByDirectory(fileItemId);
+        // 创建文件列表
+        List<FileEntry> fileEntries = new ArrayList<>();
+        // 遍历文件项列表
+        for (FileItem fileItem : fileItems) {
+            // 根据文件信息ID查询文件详情
+            FileDetail fileDetail = fileDetailRepository.findById(fileItem.getFileInfoId())
+                    .orElseThrow(() -> new FileNotFoundException("找不到文件信息：" + fileItem.getFileInfoId()));
+            // 根据文件项和文件详情创建文件条目
+            FileEntry fileEntry = FileUtil.getFileEntry(fileItem, fileDetail);
+            // 将文件条目添加到文件列表
+            fileEntries.add(fileEntry);
+        }
+        // 返回文件列表
         return fileEntries;
     }
 
     @Override
     public FileEntry getFileEntry(String fileItemId) throws FileNotFoundException {
-        FileItem fileItem = fileItemRepository.findById(fileItemId).orElseThrow(FileNotFoundException::new);
+        // 验证文件项ID是否为空
+        if (fileItemId == null || fileItemId.isEmpty()) {
+            throw new FileNotFoundException("文件项ID不能为空");
+        }
+        // 根据文件项ID查找文件项
+        FileItem fileItem = fileItemRepository.findById(fileItemId)
+                .orElseThrow(() -> new FileNotFoundException("找不到文件项：" + fileItemId));
+        // 根据文件项中的文件信息ID查找文件详情
         Optional<FileDetail> fileDetailOptional = fileDetailRepository.findById(fileItem.getFileInfoId());
         if (fileDetailOptional.isPresent()) {
+            // 如果文件详情存在，则获取文件条目并返回文件条目
             FileDetail fileDetail = fileDetailOptional.get();
             return FileUtil.getFileEntry(fileItem, fileDetail);
         } else {
+            // 如果文件详情不存在，则抛出文件未找到异常
             throw new FileNotFoundException("找不到文件信息：" + fileItem.getFileInfoId());
         }
     }
@@ -81,93 +102,127 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    @Transactional
+    // 删除文件
     public String deleteFile(String fileItemId) throws FileNotFoundException {
+        // 根据文件ID构建可变图
         MutableGraph<String> mutableGraph = buildMutableGraphByFileId(fileItemId);
+        // 获取图中节点的总数
         int totalCount = mutableGraph.nodes().size();
+        // 删除节点及其子节点，并返回是否删除成功
         if (deleteNodeAndDescendants(mutableGraph, fileItemId)) {
-            return "删除 " + totalCount + " 个, 删除成功 ";
+            // 如果删除成功，返回删除成功的消息
+            return "删除成功：" + totalCount + "个";
         } else {
-            return "删除 " + totalCount + " 个, " + "删除" + mutableGraph.nodes().size() + "个成功," + "删除" + (totalCount - mutableGraph.nodes().size()) + "个失败";
+            // 如果删除失败，计算成功删除的节点数量和失败删除的节点数量
+            int successCount = mutableGraph.nodes().size();
+            int failureCount = totalCount - successCount;
+            // 返回删除失败和成功的消息
+            return "删除失败：" + failureCount + "个，删除成功：" + successCount + "个";
         }
     }
 
     @Override
+    @Transactional
+    // 复制文件
     public FileEntry copyFile(String fileItemId, String targetDirectory) throws FileNotFoundException {
+        // 根据文件ID构建可变图
         MutableGraph<String> mutableGraph = buildMutableGraphByFileId(fileItemId);
-        int totalCount = mutableGraph.nodes().size();
-        if (copyNodeAndDescendants(mutableGraph, fileItemId, targetDirectory)) {
-            return FileUtil.getFileEntry(fileItemRepository.findById(fileItemId).get(), fileDetailRepository.findById(fileItemRepository.findById(fileItemId).get().getFileInfoId()).get());
+        // 复制节点及其子节点到目标目录
+        String newFileItemId = copyNodeAndDescendants(mutableGraph, fileItemId, targetDirectory);
+        // 根据新的文件ID获取新的文件项
+        Optional<FileItem> newFileItem = fileItemRepository.findById(newFileItemId);
+        // 如果新的文件项存在
+        if (newFileItem.isPresent()) {
+            FileItem fileItem = newFileItem.get();
+            // 根据文件项的文件信息ID获取文件详情
+            Optional<FileDetail> fileDetail = fileDetailRepository.findById(fileItem.getFileInfoId());
+            // 如果文件详情存在，则返回文件条目
+            if (fileDetail.isPresent()) {
+                return FileUtil.getFileEntry(fileItem, fileDetail.get());
+            } else {
+                // 如果文件详情不存在，则抛出异常
+                throw new ServiceException(CodeMsg.STORAGE_SOURCE_FILE_COPY_FAIL);
+            }
         } else {
+            // 如果新的文件项不存在，则抛出异常
             throw new ServiceException(CodeMsg.STORAGE_SOURCE_FILE_COPY_FAIL);
         }
     }
 
     @Override
     public FileEntry moveFile(String fileItemId, String targetDirectory) {
-        if (fileItemRepository.findById(fileItemId).get().getDirectory().equals(targetDirectory)) {
-            throw new IllegalArgumentException("不能移动到自己!");
+        // 验证输入参数是否为空或不符合要求的格式
+        if (fileItemId == null || fileItemId.isEmpty() || targetDirectory == null || targetDirectory.isEmpty()) {
+            throw new IllegalArgumentException("无效的参数!");
         }
+        // 检查文件是否存在
         Optional<FileItem> fileItemOptional = fileItemRepository.findById(fileItemId);
         if (fileItemOptional.isEmpty()) {
             throw new IllegalArgumentException("找不到文件信息:" + fileItemId);
         }
         FileItem fileItem = fileItemOptional.get();
+        // 检查目标目录是否与当前目录相同
+        if (fileItem.getDirectory().equals(targetDirectory)) {
+            throw new IllegalArgumentException("不能移动到自己!");
+        }
+        // 更新文件目录
         fileItem.setDirectory(targetDirectory);
-        return null;
+        fileItemRepository.save(fileItem);
+        // 获取文件详细信息
+        FileDetail fileDetail = fileDetailRepository.findById(fileItem.getFileInfoId()).orElse(null);
+        if (fileDetail == null) {
+            throw new IllegalArgumentException("找不到文件详细信息:" + fileItem.getFileInfoId());
+        }
+        // 返回文件信息
+        return FileUtil.getFileEntry(fileItem, fileDetail);
     }
 
     @Override
+    /*
+      重命名文件
+      @param fileItemId 文件项ID
+     * @param newName 新文件名
+     * @return 重命名后的文件项
+     * @throws FileNotFoundException 如果找不到文件信息
+     */
     public FileEntry renameFile(String fileItemId, String newName) throws FileNotFoundException {
+        // 检查文件项是否存在
         if (fileItemRepository.findById(fileItemId).isPresent()) {
+            // 获取文件项
             FileItem fileItem = fileItemRepository.findById(fileItemId).get();
+            // 设置新文件名
             fileItem.setName(newName);
+            // 保存文件项
             fileItem = fileItemRepository.save(fileItem);
-            if (fileItem.getName().equals(newName)) {
+            // 检查文件名是否已更新成功
+            if (fileItem.getName().equals(newName) && fileDetailRepository.findById(fileItem.getFileInfoId()).isPresent()) {
+                // 获取文件项的文件详情
                 return FileUtil.getFileEntry(fileItem, fileDetailRepository.findById(fileItem.getFileInfoId()).get());
             }
+            // 抛出文件重命名失败的异常
             throw new ServiceException(CodeMsg.STORAGE_SOURCE_FILE_RENAME_FAIL);
         } else {
+            // 抛出找不到文件信息的异常
             throw new FileNotFoundException("找不到文件信息：" + fileItemId);
         }
     }
 
+    // 获取文件的所有者
     public String getOwner(String fileId) {
-        if (fileDetailRepository.findById(fileId).get().getPath() == null || fileDetailRepository.findById(fileId).get().getPath().equals("")) {
-            return sandBoxRepository.findById(fileId).get().getOwner();
-        } else {
-            return getOwner(fileDetailRepository.findById(fileId).get().getPath());
-        }
-    }
-
-    public Boolean checkFileAndShare(String fileItemId, String url) {
-        String path = shareLinkRepository.findById(fileItemId).get().getFileItemId();
-        if (fileItemId.equals(path)) {
-            return true;
-        } else {
-            do {
-                fileItemId = fileDetailRepository.findById(fileItemId).get().getPath();
-            } while ((!fileItemId.equals(path)) || (!fileItemId.equals("")) || (fileItemId != null));
-            if (fileItemId.equals(path)) {
-                return true;
-            } else return false;
-        }
-    }
-
-    public int getShareOfAcl(String url, String userName) {
-        ShareLink shareLink = shareLinkRepository.findById(url).get();
-        if (shareLink.getUsers().contains(userName)) {
-            for (int i = 0; i < shareLink.getUsers().size(); i++) {
-                if (shareLink.getUsers().get(i).equals(userName)) {
-                    return shareLink.getAclist().get(i);
-                }
+        Optional<FileDetail> fileDetailOptional = fileDetailRepository.findById(fileId);
+        // 检查文件详情是否存在或路径是否为空
+        if (fileDetailOptional.isEmpty() || fileDetailOptional.get().getPath() == null || fileDetailOptional.get().getPath().isEmpty()) {
+            Optional<SandBox> sandBoxOptional = sandBoxRepository.findById(fileId);
+            // 检查沙盒是否存在
+            if (sandBoxOptional.isPresent()) {
+                return sandBoxOptional.get().getOwner();
+            } else {
+                throw new IllegalArgumentException("Invalid fileId");
             }
+        } else {
+            return getOwner(fileDetailOptional.get().getPath());
         }
-        if (shareLink.getAcl().equals("public")) {
-            return shareLink.getAllow();
-        } else if (shareLink.getAcl().equals("users") && userName != null && (!userName.equals(""))) {
-            return shareLink.getAllow();
-        }
-        return 0;
     }
 
     public MutableGraph<String> buildMutableGraphByFileId(String fileItemId) throws FileNotFoundException {
@@ -216,7 +271,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Transactional
-    public Boolean copyNodeAndDescendants(MutableGraph<String> mutableGraph, String nodeId, String directory) {
+    public String copyNodeAndDescendants(MutableGraph<String> mutableGraph, String nodeId, String directory) {
         boolean canCopy = false;
         String newNodeValue = "null";
         if (fileItemRepository.findById(nodeId).isPresent()) {
@@ -236,7 +291,7 @@ public class FileServiceImpl implements FileService {
                 copyNodeAndDescendants(mutableGraph, successor, newNodeValue);
             }
         }
-        return canCopy;
+        return newNodeValue;
     }
 
     public void modifyNodeValue(MutableGraph<String> mutableGraph, String nodeId, String newNodeValue) {
