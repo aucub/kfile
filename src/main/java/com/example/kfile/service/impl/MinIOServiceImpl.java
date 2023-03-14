@@ -35,8 +35,7 @@ public class MinIOServiceImpl implements StorageService {
     }
 
     @Override
-    public String getDownloadUrl(String platform, String path, String name, int expires) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-        Objects.requireNonNull(platform, "参数不能为空");
+    public String getDownloadUrl(String path, String name, int expires) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         Objects.requireNonNull(path, "参数不能为空");
         Objects.requireNonNull(name, "参数不能为空");
         if (expires <= 0) {

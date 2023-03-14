@@ -5,6 +5,7 @@ import com.example.kfile.domain.FileDetail;
 import com.example.kfile.domain.FileItem;
 import com.example.kfile.domain.SandBox;
 import com.example.kfile.domain.enums.FileTypeEnum;
+import com.example.kfile.domain.request.UploadFileRequest;
 import com.example.kfile.domain.result.FileEntry;
 import com.example.kfile.exception.ServiceException;
 import com.example.kfile.repository.FileDetailRepository;
@@ -102,6 +103,26 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    public FileItem newFile(UploadFileRequest uploadFileRequest, FileDetail fileDetail) {
+        FileItem fileItem = new FileItem();
+        fileItem.setVersion((short) 0);
+        fileItem.setFileInfoId(fileDetail.getId());
+        fileItem.setName(uploadFileRequest.getName());
+        fileItem.setType(FileTypeEnum.FILE);
+        fileItem.setDirectory(uploadFileRequest.getDirectory());
+        fileItem.setCreatedBy(StpUtil.getLoginId().toString());
+        fileItem.setCreatedDate(new Date());
+        fileItem.setLastModifiedDate(new Date());
+        return fileItemRepository.save(fileItem);
+    }
+
+    @Override
+    public FileDetail checkUpload(UploadFileRequest uploadFileRequest) {
+        FileDetail fileDetail = fileDetailRepository.findFileDetailBySha256sum(uploadFileRequest.getSha256sum());
+        return fileDetail;
+    }
+
+    @Override
     @Transactional
     // 删除文件
     public String deleteFile(String fileItemId) throws FileNotFoundException {
@@ -110,7 +131,7 @@ public class FileServiceImpl implements FileService {
         // 获取图中节点的总数
         int totalCount = mutableGraph.nodes().size();
         // 删除节点及其子节点，并返回是否删除成功
-        if (deleteNodeAndDescendants(mutableGraph, fileItemId)) {
+        if (Boolean.TRUE.equals(deleteNodeAndDescendants(mutableGraph, fileItemId))) {
             // 如果删除成功，返回删除成功的消息
             return "删除成功：" + totalCount + "个";
         } else {
@@ -256,16 +277,15 @@ public class FileServiceImpl implements FileService {
         Set<String> successors = mutableGraph.successors(nodeId);
         // 后序遍历节点的子节点
         for (String successor : successors) {
-            if (deleteNodeAndDescendants(mutableGraph, successor)) {
+            if (Boolean.TRUE.equals(deleteNodeAndDescendants(mutableGraph, successor))) {
                 canDelete = true;
             }
         }
-        if (canDelete) {
-            if (fileDetailRepository.findById(nodeId).isPresent()) {
-                fileDetailRepository.deleteById(nodeId);
-                // 删除节点及其相关边
-                mutableGraph.removeNode(nodeId);
-            }
+        if (canDelete && (fileDetailRepository.findById(nodeId).isPresent())) {
+            fileDetailRepository.deleteById(nodeId);
+            // 删除节点及其相关边
+            mutableGraph.removeNode(nodeId);
+
         }
         return canDelete;
     }

@@ -1,14 +1,11 @@
 package com.example.kfile.controller;
 
-import cn.dev33.satoken.stp.StpUtil;
-import cn.xuyanwu.spring.file.storage.FileInfo;
 import com.example.kfile.domain.FileDetail;
 import com.example.kfile.domain.request.*;
 import com.example.kfile.domain.result.FileEntry;
-import com.example.kfile.exception.StorageSourceFileOperatorException;
 import com.example.kfile.service.FileService;
+import com.example.kfile.service.StorageFileService;
 import com.example.kfile.util.AjaxJson;
-import com.example.kfile.util.CodeMsg;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import jakarta.validation.Valid;
@@ -19,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileNotFoundException;
-import java.util.Optional;
 
 /**
  * 文件操作相关接口, 如新建文件夹, 上传文件, 删除文件, 移动文件等.
@@ -31,6 +27,13 @@ import java.util.Optional;
 public class FileOperatorController {
 
     FileService fileService;
+
+    StorageFileService storageFileService;
+
+    @Autowired
+    public void setStorageFileService(StorageFileService storageFileService) {
+        this.storageFileService = storageFileService;
+    }
 
     @Autowired
     public void setFileService(FileService fileService) {
@@ -64,23 +67,11 @@ public class FileOperatorController {
 
     @ApiOperation(value = "上传文件")
     @PostMapping("/upload/file")
-    // TODO 上传文件
     public AjaxJson<?> uploadFile(@Valid @RequestBody UploadFileRequest uploadFileRequest, @RequestPart("file") MultipartFile file) throws FileNotFoundException {
-        FileInfo fileInfo = fileStorageService.of(file).setName(uploadFileRequest.getSha256sum()).upload();
-        if (fileInfo == null) {
-            throw new StorageSourceFileOperatorException(CodeMsg.STORAGE_SOURCE_FILE_PROXY_UPLOAD_FAIL, fileStorageService.getFileStorage().getPlatform(), "文件上传失败", null);
-        }
-        Optional<FileDetail> fileDetailOptional = fileDetailRepository.findById(fileInfo.getId());
-        if (fileDetailOptional.isEmpty()) {
-            throw new FileNotFoundException("上传出错,数据异常：" + fileInfo);
-        }
-        FileDetail fileDetail = fileDetailOptional.get();
-        fileDetail.setSha256sum(uploadFileRequest.getSha256sum());
-        fileDetail.setCreatedBy(StpUtil.getLoginId().toString());
-        fileDetailRepository.save(fileDetail);
-        if (uploadFileRequest.getFileItemId() != null) {
-
-        }
+        FileDetail fileDetail = fileService.checkUpload(uploadFileRequest);
+        if (fileDetail != null) {
+            fileService.newFile(uploadFileRequest, fileDetail);
+        } else storageFileService.uploadFile(uploadFileRequest, file);
         return AjaxJson.getSuccess("上传成功");
     }
 
