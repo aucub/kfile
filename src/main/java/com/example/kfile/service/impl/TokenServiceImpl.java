@@ -3,6 +3,7 @@ package com.example.kfile.service.impl;
 import com.example.kfile.service.ITokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
@@ -11,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.*;
 
@@ -21,8 +21,6 @@ public class TokenServiceImpl implements ITokenService {
 
     @Value("${jwt.secret}")
     private String secret;
-    private final SecretKey key = new SecretKeySpec(secret.getBytes(),
-            Jwts.SIG.HS512.getId());
     @Value("${jwt.expireTime}")
     private int expireTime;
     @Value("${jwt.tokenHead}")
@@ -32,10 +30,11 @@ public class TokenServiceImpl implements ITokenService {
      * 根据Claims生成JWT的token
      */
     public String generateToken(Map<String, Object> claims) {
+        System.out.println("生成token的用户名" + claims.get("sub"));
         return Jwts.builder()
                 .claims(claims)
                 .expiration(generateExpirationDate())
-                .signWith(key)
+                .signWith(new SecretKeySpec(Decoders.BASE64.decode(secret), "HmacSHA512"))
                 .compact();
     }
 
@@ -47,7 +46,7 @@ public class TokenServiceImpl implements ITokenService {
      */
     public Claims parseToken(String token) {
         return Jwts.parser()
-                .verifyWith(key)
+                .verifyWith(new SecretKeySpec(Decoders.BASE64.decode(secret), "HmacSHA512"))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

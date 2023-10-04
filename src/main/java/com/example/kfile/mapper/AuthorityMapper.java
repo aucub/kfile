@@ -2,6 +2,7 @@ package com.example.kfile.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.kfile.entity.Authority;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * <p>
@@ -11,6 +12,7 @@ import com.example.kfile.entity.Authority;
  * @author aucub
  * @since 2023-10-04
  */
+@Mapper
 public interface AuthorityMapper extends BaseMapper<Authority> {
 
 }

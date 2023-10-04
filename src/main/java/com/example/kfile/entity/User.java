@@ -89,7 +89,7 @@ public class User implements Serializable {
 
     private LocalDateTime lastModifiedDate;
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 

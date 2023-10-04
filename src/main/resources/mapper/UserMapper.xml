@@ -6,4 +6,9 @@
         SET login_date = NOW()
         WHERE username = #{username}
     </update>
+    <update id="updatePasswordByUsername">
+        UPDATE user
+        SET password = #{password}
+        WHERE username = #{username}
+    </update>
 </mapper>
