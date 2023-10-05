@@ -1,14 +1,28 @@
-package com.example.kfile.utils;
+package com.example.kfile;
 
 import com.baomidou.mybatisplus.generator.FastAutoGenerator;
 import com.baomidou.mybatisplus.generator.config.rules.DbColumnType;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.sql.Types;
 
-public class AutoGeneratorUtil {
-    public static void main(String[] args) {
-        FastAutoGenerator.create("jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/test?sslMode=VERIFY_IDENTITY&enabledTLSProtocols=TLSv1.2,TLSv1.3", "3LvGDmj3dAw8VgS.root", "dtU8R9oGdyRM8q2t")
+@SpringBootTest
+public class FastAutoGeneratorTest {
+
+    @Value("${spring.datasource.url}")
+    private String url;
+    @Value("${spring.datasource.username}")
+    private String username;
+
+    @Value("${spring.datasource.password}")
+    private String password;
+
+    @Test
+    public void FastAutoGenerator() {
+        FastAutoGenerator.create(url, username, password)
                 .globalConfig(builder -> {
                     builder.author("aucub") // 设置作者
                             .outputDir(".");

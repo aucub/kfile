@@ -6,6 +6,7 @@ create table if not exists user
     nickname                 varchar(256)                           not null,
     password                 varchar(256)                           not null,
     enabled                  tinyint(1)   default 1                 not null,
+    deleted                  tinyint(1)   default 0                 not null,
     mail                     varchar(256)                           null,
     used_up_rate             bigint       default 0                 not null comment '已用上传流量',
     used_down_rate           bigint       default 0                 not null comment '已用下载流量',
@@ -35,3 +36,36 @@ create table if not exists authority
         foreign key (user_id) references user (id)
 );
 
+create table if not exists file_item
+(
+    id                 varchar(255)                        not null,
+    version            smallint                            not null,
+    file_info_id       varchar(255)                        null,
+    name               varchar(255)                        not null,
+    ext                varchar(255)                        null,
+    type               varchar(255)                        not null,
+    content_type       varchar(255)                        null,
+    directory          varchar(255)                        null,
+    created_date       timestamp default CURRENT_TIMESTAMP not null,
+    last_modified_date timestamp default CURRENT_TIMESTAMP not null,
+    created_by         int                                 null,
+    last_modified_by   int                                 null,
+    share              varchar(255)                        null,
+    description        varchar(255)                        null,
+    primary key (id, version)
+);
+
+create table if not exists share
+(
+    url                varchar(255)                        not null comment '链接, example = "voldd3"'
+        primary key,
+    file_item_id       varchar(255)                        null comment '文件ID',
+    acl                varchar(255)                        null comment '访问范围, example = "public","aclist","users"',
+    acl_list           json                                null comment '权限,4=access,2=download,1=upload',
+    password           varchar(255)                        null comment '密码',
+    created_date       timestamp default CURRENT_TIMESTAMP not null comment '创建时间, example = "2021-11-22 10:05"',
+    expire_date        timestamp                           null comment '过期时间, example = "2021-11-23 10:05"',
+    last_modified_date timestamp default CURRENT_TIMESTAMP not null,
+    created_by         int                                 null,
+    last_modified_by   int                                 null
+);

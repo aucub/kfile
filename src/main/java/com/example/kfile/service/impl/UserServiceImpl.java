@@ -7,6 +7,7 @@ import com.example.kfile.entity.Authority;
 import com.example.kfile.entity.User;
 import com.example.kfile.mapper.AuthorityMapper;
 import com.example.kfile.mapper.UserMapper;
+import com.example.kfile.service.IUserCacheService;
 import com.example.kfile.service.IUserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     private PasswordEncoder passwordEncoder;
 
+    private IUserCacheService userCacheService;
+
     @Autowired
     public void setUserMapper(UserMapper userMapper) {
         this.userMapper = userMapper;
@@ -56,6 +59,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Autowired
+    public void setUserCacheService(IUserCacheService userCacheService) {
+        this.userCacheService = userCacheService;
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User selectUser = new User();
@@ -64,6 +72,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (Objects.isNull(user)) {
             throw new UsernameNotFoundException("用户名不存在");
         }
+        user.setPassword("[PROTECTED]");
+        userCacheService.setUser(user);
         List<String> authorities = selectAuthorityByUserId(user.getId());
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>(authorities.size());
         authorities.forEach(name -> grantedAuthorities.add(new SimpleGrantedAuthority(name)));
@@ -77,14 +87,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     /**
      * 根据用户id查询用户权限
-     *
-     * @param userId
-     * @return
      */
     public List<String> selectAuthorityByUserId(int userId) {
         Authority authority = new Authority();
-        authority.setUserId(Integer.valueOf(userId));
-        List<Authority> authorities = authorityMapper.selectList(new QueryWrapper(authority));
+        authority.setUserId(userId);
+        List<Authority> authorities = authorityMapper.selectList(new QueryWrapper<>(authority));
         return authorities.stream().map(Authority::getAuthority).collect(Collectors.toList());
     }
 
@@ -119,6 +126,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new Exception("该账号不存在！");
         }
         userMapper.updatePasswordByUsername(username, passwordEncoder.encode(password));
+        userCacheService.delUser(user.getId());
     }
 
     @Override
@@ -126,10 +134,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         SecurityContext securityContext = SecurityContextHolder.getContext();
         Authentication authentication = securityContext.getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        User cacheUser = userCacheService.getUser(userDetails.getUsername());
+        if (Objects.nonNull(cacheUser)) {
+            return cacheUser;
+        }
         User selectUser = new User();
         selectUser.setUsername(userDetails.getUsername());
         User user = userMapper.selectOne(new QueryWrapper<>(selectUser));
         user.setPassword("[PROTECTED]");
+        userCacheService.setUser(user);
         return user;
     }
 

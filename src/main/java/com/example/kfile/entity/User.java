@@ -2,7 +2,10 @@ package com.example.kfile.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -14,8 +17,10 @@ import java.time.LocalDateTime;
  * @author aucub
  * @since 2023-10-04
  */
+@Data
 public class User implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
@@ -25,9 +30,12 @@ public class User implements Serializable {
 
     private String nickname;
 
-    private String password;
+    private transient String password;
 
     private Boolean enabled;
+
+    @TableLogic
+    private Integer deleted;
 
     private String mail;
 
@@ -89,173 +97,13 @@ public class User implements Serializable {
 
     private LocalDateTime lastModifiedDate;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Boolean getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getMail() {
-        return mail;
-    }
-
-    public void setMail(String mail) {
-        this.mail = mail;
-    }
-
-    public Long getUsedUpRate() {
-        return usedUpRate;
-    }
-
-    public void setUsedUpRate(Long usedUpRate) {
-        this.usedUpRate = usedUpRate;
-    }
-
-    public Long getUsedDownRate() {
-        return usedDownRate;
-    }
-
-    public void setUsedDownRate(Long usedDownRate) {
-        this.usedDownRate = usedDownRate;
-    }
-
-    public Long getFreeUpRate() {
-        return freeUpRate;
-    }
-
-    public void setFreeUpRate(Long freeUpRate) {
-        this.freeUpRate = freeUpRate;
-    }
-
-    public Long getFreeDownRate() {
-        return freeDownRate;
-    }
-
-    public void setFreeDownRate(Long freeDownRate) {
-        this.freeDownRate = freeDownRate;
-    }
-
-    public Long getRateResetLeftMills() {
-        return rateResetLeftMills;
-    }
-
-    public void setRateResetLeftMills(Long rateResetLeftMills) {
-        this.rateResetLeftMills = rateResetLeftMills;
-    }
-
-    public Boolean getFreeUser() {
-        return freeUser;
-    }
-
-    public void setFreeUser(Boolean freeUser) {
-        this.freeUser = freeUser;
-    }
-
-    public Long getAccountExpireLeftTime() {
-        return accountExpireLeftTime;
-    }
-
-    public void setAccountExpireLeftTime(Long accountExpireLeftTime) {
-        this.accountExpireLeftTime = accountExpireLeftTime;
-    }
-
-    public Long getTotalUsedStorage() {
-        return totalUsedStorage;
-    }
-
-    public void setTotalUsedStorage(Long totalUsedStorage) {
-        this.totalUsedStorage = totalUsedStorage;
-    }
-
-    public String getLoginIp() {
-        return loginIp;
-    }
-
-    public void setLoginIp(String loginIp) {
-        this.loginIp = loginIp;
-    }
-
-    public LocalDateTime getLoginDate() {
-        return loginDate;
-    }
-
-    public void setLoginDate(LocalDateTime loginDate) {
-        this.loginDate = loginDate;
-    }
-
-    public Integer getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Integer createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public LocalDateTime getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(LocalDateTime createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Integer getLastModifiedBy() {
-        return lastModifiedBy;
-    }
-
-    public void setLastModifiedBy(Integer lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-    }
-
-    public LocalDateTime getLastModifiedDate() {
-        return lastModifiedDate;
-    }
-
-    public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
-    }
-
     @Override
     public String toString() {
         return "User{" +
                 "id = " + id +
                 ", username = " + username +
                 ", nickname = " + nickname +
-                ", password = " + password +
+                ", password = [PROTECTED]" +
                 ", enabled = " + enabled +
                 ", mail = " + mail +
                 ", usedUpRate = " + usedUpRate +
