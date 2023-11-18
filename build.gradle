@@ -35,7 +35,7 @@ dependencies {
     implementation 'com.mysql:mysql-connector-j:8.2.0'
     implementation 'org.springframework.boot:spring-boot-starter-json:3.1.5'
     implementation 'cn.hutool:hutool-all:5.8.22'
-    implementation 'cn.xuyanwu:spring-file-storage:1.0.3'
+    implementation 'org.dromara.x-file-storage:x-file-storage-spring:2.0.0'
     implementation 'com.google.guava:guava:32.1.2-jre'
     implementation 'org.springframework.boot:spring-boot-starter-aop:3.1.5'
     implementation 'org.springframework.boot:spring-boot-starter-validation:3.1.5'

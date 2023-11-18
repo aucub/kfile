@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 public class FileEntry extends FileItem {
 
-    private String url;
     private Long size;
 
     //"SHA256"

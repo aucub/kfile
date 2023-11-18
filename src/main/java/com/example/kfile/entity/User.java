@@ -7,7 +7,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * <p>
@@ -87,15 +87,15 @@ public class User implements Serializable {
     /**
      * 最后登录时间
      */
-    private LocalDateTime loginDate;
+    private Date loginDate;
 
     private Integer createdBy;
 
-    private LocalDateTime createdDate;
+    private Date createdDate;
 
     private Integer lastModifiedBy;
 
-    private LocalDateTime lastModifiedDate;
+    private Date lastModifiedDate;
 
     @Override
     public String toString() {

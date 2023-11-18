@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class MultipartFileParam {
-    // 用户id
+    //用户id
     private String uid;
     //任务ID
     private String id;

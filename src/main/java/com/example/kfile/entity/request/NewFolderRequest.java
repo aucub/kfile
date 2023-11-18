@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class NewFolderRequest {
-    //文件名", example = "a.mp4"
+    //文件名", example = "a"
     private String name;
 
     //所在路径ID
